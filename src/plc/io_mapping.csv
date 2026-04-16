@@ -1,0 +1,127 @@
+Address,Signal_Name,Direction,Type,Module,Description
+# ================================================================
+# Robot I/O — R1 FANUC (material handling)
+# ================================================================
+%QX0.0,R1_MoveCmd,OUT,BOOL,EL2008-Slot0,Robot R1 move command
+%QX0.1,R1_GripperClose,OUT,BOOL,EL2008-Slot0,R1 gripper close
+%QX0.2,R1_GripperOpen,OUT,BOOL,EL2008-Slot0,R1 gripper open
+%QX0.3,R1_SuctionON,OUT,BOOL,EL2008-Slot0,R1 vacuum suction activate
+%QX0.4,R1_SuctionOFF,OUT,BOOL,EL2008-Slot0,R1 vacuum suction release
+%QX0.5,R1_VisionTrigger,OUT,BOOL,EL2008-Slot0,R1 camera trigger pulse
+%IX0.0,R1_InPosition,IN,BOOL,EL1008-Slot0,R1 motion complete
+%IX0.1,R1_GripperClosed,IN,BOOL,EL1008-Slot0,R1 gripper closed sensor
+%IX0.2,R1_GripperOpened,IN,BOOL,EL1008-Slot0,R1 gripper opened sensor
+%IX0.3,R1_VacuumOK,IN,BOOL,EL1008-Slot0,R1 vacuum level reached
+%IX0.4,R1_PartPresent,IN,BOOL,EL1008-Slot0,R1 part-in-gripper sensor
+# ================================================================
+# Robot I/O — R2 ROKAE (main assembly)
+# ================================================================
+%QX1.0,R2_MoveCmd,OUT,BOOL,EL2008-Slot1,Robot R2 move command
+%QX1.1,R2_GripperClose,OUT,BOOL,EL2008-Slot1,R2 gripper close
+%QX1.2,R2_GripperOpen,OUT,BOOL,EL2008-Slot1,R2 gripper open
+%QX1.3,R2_ScrewDriverRun,OUT,BOOL,EL2008-Slot1,R2 screw driver start
+%QX1.4,R2_ScrewDriverRev,OUT,BOOL,EL2008-Slot1,R2 screw driver reverse
+%IX1.0,R2_InPosition,IN,BOOL,EL1008-Slot1,R2 motion complete
+%IX1.1,R2_GripperClosed,IN,BOOL,EL1008-Slot1,R2 gripper closed sensor
+%IX1.2,R2_GripperOpened,IN,BOOL,EL1008-Slot1,R2 gripper opened sensor
+%IX1.3,R2_ScrewDone,IN,BOOL,EL1008-Slot1,R2 screw cycle complete
+%IX1.4,R2_ScrewOK,IN,BOOL,EL1008-Slot1,R2 screw result OK
+%IX1.5,R2_ScrewNOK,IN,BOOL,EL1008-Slot1,R2 screw result NOK
+# ================================================================
+# Robot I/O — R3 ROKAE (brake magnet base)
+# ================================================================
+%QX2.0,R3_MoveCmd,OUT,BOOL,EL2008-Slot2,Robot R3 move command
+%QX2.1,R3_GripperClose,OUT,BOOL,EL2008-Slot2,R3 gripper close
+%QX2.2,R3_GripperOpen,OUT,BOOL,EL2008-Slot2,R3 gripper open
+%QX2.3,R3_ScrewDriverRun,OUT,BOOL,EL2008-Slot2,R3 screw driver start
+%QX2.4,R3_ScrewDriverRev,OUT,BOOL,EL2008-Slot2,R3 screw driver reverse
+%IX2.0,R3_InPosition,IN,BOOL,EL1008-Slot2,R3 motion complete
+%IX2.1,R3_GripperClosed,IN,BOOL,EL1008-Slot2,R3 gripper closed sensor
+%IX2.2,R3_GripperOpened,IN,BOOL,EL1008-Slot2,R3 gripper opened sensor
+%IX2.3,R3_ScrewDone,IN,BOOL,EL1008-Slot2,R3 screw cycle complete
+%IX2.4,R3_ScrewOK,IN,BOOL,EL1008-Slot2,R3 screw result OK
+%IX2.5,R3_ScrewNOK,IN,BOOL,EL1008-Slot2,R3 screw result NOK
+# ================================================================
+# Turntable servo (Delta ASDA-A3 via EtherCAT)
+# ================================================================
+%QX3.0,TT_ServoEnable,OUT,BOOL,Delta_ASDA,Turntable servo enable
+%QX3.1,TT_IndexCmd,OUT,BOOL,Delta_ASDA,Turntable 120deg index command
+%QX3.2,TT_HomeCmd,OUT,BOOL,Delta_ASDA,Turntable home command
+%QX3.3,TT_ClampCmd,OUT,BOOL,Delta_ASDA,Pneumatic clamp engage
+%QX3.4,TT_UnclampCmd,OUT,BOOL,Delta_ASDA,Pneumatic clamp release
+%IX3.0,TT_AtPosition,IN,BOOL,Delta_ASDA,Turntable in-position
+%IX3.1,TT_Clamped,IN,BOOL,Delta_ASDA,Turntable clamp confirmed
+%IX3.2,TT_Unclamped,IN,BOOL,Delta_ASDA,Turntable unclamp confirmed
+%IX3.3,TT_HomeDone,IN,BOOL,Delta_ASDA,Turntable homing complete
+%IX3.4,TT_Error,IN,BOOL,Delta_ASDA,Turntable servo fault
+%IW0,TT_ActPosition,IN,INT,Delta_ASDA,Turntable actual position (0.01deg)
+# ================================================================
+# Screw feeder — R2 station
+# ================================================================
+%QX4.0,SF_R2_FeedCmd,OUT,BOOL,EL2008-Slot3,R2 screw feeder feed command
+%IX4.0,SF_R2_BitPresent,IN,BOOL,EL1008-Slot3,R2 screw bit in-position
+%IX4.1,SF_R2_ScrewReady,IN,BOOL,EL1008-Slot3,R2 screw at pickup pos
+%IX4.2,SF_R2_FeederEmpty,IN,BOOL,EL1008-Slot3,R2 feeder low-level
+%IW1,SF_R2_Count,IN,INT,EL1008-Slot3,R2 feeder screw count
+# ================================================================
+# Screw feeder — R3 station
+# ================================================================
+%QX4.4,SF_R3_FeedCmd,OUT,BOOL,EL2008-Slot3,R3 screw feeder feed command
+%IX4.4,SF_R3_BitPresent,IN,BOOL,EL1008-Slot3,R3 screw bit in-position
+%IX4.5,SF_R3_ScrewReady,IN,BOOL,EL1008-Slot3,R3 screw at pickup pos
+%IX4.6,SF_R3_FeederEmpty,IN,BOOL,EL1008-Slot3,R3 feeder low-level
+%IW2,SF_R3_Count,IN,INT,EL1008-Slot3,R3 feeder screw count
+# ================================================================
+# Safety I/O (via Beckhoff EL1904 / EL2904 TwinSAFE)
+# ================================================================
+%IX8.0,EStop1_Ch1,IN,BOOL,EL1904,E-Stop panel front channel 1
+%IX8.1,EStop1_Ch2,IN,BOOL,EL1904,E-Stop panel front channel 2
+%IX8.2,EStop2_Ch1,IN,BOOL,EL1904,E-Stop panel rear channel 1
+%IX8.3,EStop2_Ch2,IN,BOOL,EL1904,E-Stop panel rear channel 2
+%IX9.0,EStop3_Ch1,IN,BOOL,EL1904,E-Stop teach pendant channel 1
+%IX9.1,EStop3_Ch2,IN,BOOL,EL1904,E-Stop teach pendant channel 2
+%IX9.2,LC1_Ch1,IN,BOOL,EL1904,Light curtain 1 channel 1
+%IX9.3,LC1_Ch2,IN,BOOL,EL1904,Light curtain 1 channel 2
+%IX10.0,LC2_Ch1,IN,BOOL,EL1904,Light curtain 2 channel 1
+%IX10.1,LC2_Ch2,IN,BOOL,EL1904,Light curtain 2 channel 2
+%IX10.2,Door1_Ch1,IN,BOOL,EL1904,Safety door 1 channel 1
+%IX10.3,Door1_Ch2,IN,BOOL,EL1904,Safety door 1 channel 2
+%IX11.0,Door2_Ch1,IN,BOOL,EL1904,Safety door 2 channel 1
+%IX11.1,Door2_Ch2,IN,BOOL,EL1904,Safety door 2 channel 2
+%IX11.2,MuteSns1_Entry,IN,BOOL,EL1904,Conveyor 1 mute sensor entry
+%IX11.3,MuteSns1_Exit,IN,BOOL,EL1904,Conveyor 1 mute sensor exit
+%IX12.0,MuteSns2_Entry,IN,BOOL,EL1904,Conveyor 2 mute sensor entry
+%IX12.1,MuteSns2_Exit,IN,BOOL,EL1904,Conveyor 2 mute sensor exit
+%QX8.0,STO_R1,OUT,BOOL,EL2904,Safe Torque Off R1
+%QX8.1,STO_R2,OUT,BOOL,EL2904,Safe Torque Off R2
+%QX8.2,STO_R3,OUT,BOOL,EL2904,Safe Torque Off R3
+%QX8.3,STO_Turntable,OUT,BOOL,EL2904,Safe Torque Off turntable
+%QX9.0,SLS_R1,OUT,BOOL,EL2904,Safely Limited Speed R1
+%QX9.1,SLS_R2,OUT,BOOL,EL2904,Safely Limited Speed R2
+%QX9.2,SLS_R3,OUT,BOOL,EL2904,Safely Limited Speed R3
+%QX9.3,SafetyRelay_Main,OUT,BOOL,EL2904,Main contactor relay
+# ================================================================
+# Vision I/O (PLC <-> IPC handshake)
+# ================================================================
+%QX5.0,VIS_Trigger_R1,OUT,BOOL,EL2008-Slot4,Vision trigger for R1 camera
+%QX5.1,VIS_Trigger_WT,OUT,BOOL,EL2008-Slot4,Vision trigger worktable camera
+%IX5.0,VIS_Busy_R1,IN,BOOL,EL1008-Slot4,Vision R1 processing
+%IX5.1,VIS_Done_R1,IN,BOOL,EL1008-Slot4,Vision R1 result ready
+%IX5.2,VIS_OK_R1,IN,BOOL,EL1008-Slot4,Vision R1 result pass
+%IX5.3,VIS_Busy_WT,IN,BOOL,EL1008-Slot4,Vision worktable processing
+%IX5.4,VIS_Done_WT,IN,BOOL,EL1008-Slot4,Vision worktable result ready
+%IX5.5,VIS_OK_WT,IN,BOOL,EL1008-Slot4,Vision worktable result pass
+%IW3,VIS_Dx_R1,IN,INT,EL3102,Vision R1 X offset (0.01mm units)
+%IW4,VIS_Dy_R1,IN,INT,EL3102,Vision R1 Y offset (0.01mm units)
+%IW5,VIS_Drz_R1,IN,INT,EL3102,Vision R1 Rz offset (0.01deg units)
+# ================================================================
+# Conveyor I/O
+# ================================================================
+%QX6.0,CONV_Upstream_Run,OUT,BOOL,EL2008-Slot5,Upstream conveyor motor run
+%QX6.1,CONV_Upstream_Stop,OUT,BOOL,EL2008-Slot5,Upstream conveyor motor stop
+%QX6.2,CONV_Downstream_Run,OUT,BOOL,EL2008-Slot5,Downstream conveyor motor run
+%QX6.3,CONV_Downstream_Stop,OUT,BOOL,EL2008-Slot5,Downstream conveyor motor stop
+%IX6.0,CONV_Upstream_Sensor,IN,BOOL,EL1008-Slot5,Upstream conveyor part sensor
+%IX6.1,CONV_Downstream_Sensor,IN,BOOL,EL1008-Slot5,Downstream conveyor part sensor
+%IX6.2,CONV_Upstream_Running,IN,BOOL,EL1008-Slot5,Upstream conveyor running FB
+%IX6.3,CONV_Downstream_Running,IN,BOOL,EL1008-Slot5,Downstream conveyor running FB

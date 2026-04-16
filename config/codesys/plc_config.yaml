@@ -1,0 +1,64 @@
+# ================================================================
+# OP08#-1 Harmonic Reducer Motor Assembly Cell
+# CODESYS Virtual Control SL — PLC Runtime Configuration
+# ================================================================
+
+runtime:
+  product: CODESYS Control for Linux SL
+  version: 4.13.0.0
+  platform: linux-x86_64
+  licence_type: virtual_control_sl
+
+communication:
+  gateway:
+    address: 0.0.0.0
+    port: 11740
+  opc_ua:
+    enabled: true
+    port: 4840
+    security_policy: Basic256Sha256
+    anonymous_access: false
+  modbus_tcp:
+    enabled: true
+    port: 502
+    max_connections: 5
+
+task_configuration:
+  main_task:
+    name: MainTask
+    priority: 1
+    cycle_time_ms: 1
+    watchdog_time_ms: 100
+    programs:
+      - Main_Sequence
+  safety_task:
+    name: SafetyTask
+    priority: 0              # Highest priority
+    cycle_time_ms: 4         # FSoE watchdog compatible
+    watchdog_time_ms: 20
+    programs:
+      - Safety_Program
+
+fieldbus:
+  ethercat:
+    enabled: true
+    master_interface: enp3s0
+    cycle_time_us: 1000
+    dc_enabled: true
+    config_file: ../ethercat/network_config.yaml
+
+logging:
+  level: INFO
+  file: /var/log/codesys/plc_runtime.log
+  max_size_mb: 50
+  rotate_count: 5
+
+persistence:
+  retain_variables: true
+  retain_file: /var/codesys/retain.dat
+  backup_interval_s: 300
+
+web_visualisation:
+  enabled: true
+  port: 8080
+  resolution: "1920x1080"

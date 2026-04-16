@@ -1,0 +1,134 @@
+# ================================================================
+# OP08#-1 Harmonic Reducer Motor Assembly Cell
+# EtherCAT Network Configuration — IgH EtherCAT Master
+# ================================================================
+
+master:
+  interface: enp3s0
+  cycle_time_us: 1000            # 1 ms real-time cycle
+  dc_enabled: true               # Distributed Clocks
+  dc_sync0_cycle_ns: 1000000     # 1 ms DC sync signal
+  watchdog_timeout_ms: 100
+  log_level: warning
+
+slaves:
+  - alias: 0
+    position: 0
+    vendor_id: 0x00000002        # Beckhoff
+    product_code: 0x09252048
+    name: EK1100
+    description: EtherCAT Bus Coupler
+    dc_assign: 0x0000
+
+  - alias: 0
+    position: 1
+    vendor_id: 0x00000002
+    product_code: 0x03F63052
+    name: EL1008
+    description: 8-channel Digital Input 24V DC
+    pdo_mapping:
+      rxpdo: []
+      txpdo:
+        - index: 0x6000
+          entries:
+            - { index: 0x6000, subindex: 1, bit_length: 1, name: DI_Ch1 }
+            - { index: 0x6000, subindex: 2, bit_length: 1, name: DI_Ch2 }
+            - { index: 0x6000, subindex: 3, bit_length: 1, name: DI_Ch3 }
+            - { index: 0x6000, subindex: 4, bit_length: 1, name: DI_Ch4 }
+            - { index: 0x6000, subindex: 5, bit_length: 1, name: DI_Ch5 }
+            - { index: 0x6000, subindex: 6, bit_length: 1, name: DI_Ch6 }
+            - { index: 0x6000, subindex: 7, bit_length: 1, name: DI_Ch7 }
+            - { index: 0x6000, subindex: 8, bit_length: 1, name: DI_Ch8 }
+
+  - alias: 0
+    position: 2
+    vendor_id: 0x00000002
+    product_code: 0x07D43052
+    name: EL2008
+    description: 8-channel Digital Output 24V DC 0.5A
+    pdo_mapping:
+      rxpdo:
+        - index: 0x7000
+          entries:
+            - { index: 0x7000, subindex: 1, bit_length: 1, name: DO_Ch1 }
+            - { index: 0x7000, subindex: 2, bit_length: 1, name: DO_Ch2 }
+            - { index: 0x7000, subindex: 3, bit_length: 1, name: DO_Ch3 }
+            - { index: 0x7000, subindex: 4, bit_length: 1, name: DO_Ch4 }
+            - { index: 0x7000, subindex: 5, bit_length: 1, name: DO_Ch5 }
+            - { index: 0x7000, subindex: 6, bit_length: 1, name: DO_Ch6 }
+            - { index: 0x7000, subindex: 7, bit_length: 1, name: DO_Ch7 }
+            - { index: 0x7000, subindex: 8, bit_length: 1, name: DO_Ch8 }
+      txpdo: []
+
+  - alias: 0
+    position: 3
+    vendor_id: 0x00000002
+    product_code: 0x0C1E3052
+    name: EL3102
+    description: 2-channel Analog Input +/-10V 16-bit
+    pdo_mapping:
+      txpdo:
+        - index: 0x6000
+          entries:
+            - { index: 0x6000, subindex: 1, bit_length: 16, name: AI_Ch1 }
+            - { index: 0x6010, subindex: 1, bit_length: 16, name: AI_Ch2 }
+
+  - alias: 0
+    position: 4
+    vendor_id: 0x00000002
+    product_code: 0x10063052
+    name: EL4102
+    description: 2-channel Analog Output +/-10V 16-bit
+
+  - alias: 0
+    position: 5
+    vendor_id: 0x00000002
+    product_code: 0x13ED3052
+    name: EL5101
+    description: Incremental Encoder Interface
+
+  - alias: 0
+    position: 6
+    vendor_id: 0x000001DD        # Delta Electronics
+    product_code: 0x10305070
+    name: Delta_ASDA_A3
+    description: Turntable Servo Drive (CiA 402 profile)
+    dc_assign: 0x0300
+    sdo_config:
+      - { index: 0x6060, subindex: 0, value: 8 }     # CSP mode
+      - { index: 0x60C2, subindex: 1, value: 1 }     # Interpolation period 1 ms
+
+  - alias: 0
+    position: 7
+    vendor_id: 0x00000539        # Atlas Copco
+    product_code: 0x00000301
+    name: Atlas_QST_R2
+    description: Screw Controller R2 (M2.5x4 motor mount)
+
+  - alias: 0
+    position: 8
+    vendor_id: 0x00000539
+    product_code: 0x00000302
+    name: Atlas_QST_R3
+    description: Screw Controller R3 (M2.5x6 brake magnet base)
+
+  - alias: 0
+    position: 9
+    vendor_id: 0x00000002
+    product_code: 0x17923052
+    name: EL6910
+    description: TwinSAFE Logic Terminal (FSoE master)
+
+  - alias: 0
+    position: 10
+    vendor_id: 0x00000002
+    product_code: 0x17803052
+    name: EL1904
+    description: 4-channel Safety Digital Input (TwinSAFE)
+
+  - alias: 0
+    position: 11
+    vendor_id: 0x00000002
+    product_code: 0x17843052
+    name: EL2904
+    description: 4-channel Safety Digital Output (TwinSAFE)

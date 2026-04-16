@@ -1,0 +1,80 @@
+# ================================================================
+# OP08#-1 — Robot R1 Configuration (FANUC M-10iD/12)
+# Role: Material handling with vision + gripper + suction
+# ================================================================
+
+robot:
+  id: R1_FANUC
+  brand: FANUC
+  model: M-10iD/12
+  serial_number: F-2024-R1-0087
+  role: material_handling
+
+specifications:
+  dof: 6
+  payload_kg: 12.0
+  reach_mm: 1441.0
+  repeatability_mm: 0.04
+  max_speed_deg_s: [450, 380, 520, 550, 545, 1000]
+  weight_kg: 68.0
+  ip_rating: IP67
+
+communication:
+  ip_address: 192.168.1.11
+  subnet_mask: 255.255.255.0
+  gateway: 192.168.1.1
+  protocol: FANUC_ROBOGUIDE
+  port: 18735
+  timeout_ms: 5000
+  heartbeat_interval_ms: 500
+
+tools:
+  gripper:
+    type: pneumatic_parallel
+    stroke_mm: 20.0
+    force_n: 40.0
+    open_time_ms: 150
+    close_time_ms: 200
+    tcp_offset: [0.0, 0.0, 135.0, 0.0, 0.0, 0.0]
+  suction:
+    type: vacuum_cup
+    diameter_mm: 25.0
+    vacuum_threshold_kpa: -60.0
+    activate_time_ms: 100
+    release_time_ms: 50
+    tcp_offset: [0.0, 45.0, 130.0, 0.0, 0.0, 0.0]
+  vision:
+    camera_id: cam_r1_eye_in_hand
+    calibration_mode: eye_in_hand
+
+home_position:
+  joints_deg: [0.0, -30.0, 0.0, 0.0, -60.0, 0.0]
+
+speed_profiles:
+  fast:
+    joint_speed_pct: 80
+    linear_speed_mm_s: 500
+  normal:
+    joint_speed_pct: 50
+    linear_speed_mm_s: 250
+  slow:
+    joint_speed_pct: 20
+    linear_speed_mm_s: 50
+  approach:
+    joint_speed_pct: 10
+    linear_speed_mm_s: 30
+
+work_objects:
+  tray_stacker_0:
+    frame: [350.0, -400.0, 800.0, 0.0, 0.0, 0.0]
+  tray_stacker_1:
+    frame: [350.0, 0.0, 800.0, 0.0, 0.0, 0.0]
+  tray_stacker_2:
+    frame: [350.0, 400.0, 800.0, 0.0, 0.0, 0.0]
+  turntable_zone1:
+    frame: [-200.0, 0.0, 750.0, 0.0, 0.0, 0.0]
+
+safety:
+  zone: ZONE1
+  max_speed_mm_s: 500.0
+  collision_detection_threshold_nm: 15.0

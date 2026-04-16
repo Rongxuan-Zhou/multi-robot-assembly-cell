@@ -1,0 +1,97 @@
+# ================================================================
+# OP08#-1 — Robot R3 Configuration (ROKAE xMate ER3)
+# Role: Brake magnet base assembly — 2 screws (M2.5x6)
+#       Active only for Actuator #11 and #18
+# ================================================================
+
+robot:
+  id: R3_ROKAE
+  brand: ROKAE
+  model: xMate ER3
+  serial_number: RK-2024-R3-0098
+  role: brake_magnet_base_assembly
+
+specifications:
+  dof: 7
+  payload_kg: 3.0
+  reach_mm: 590.0
+  repeatability_mm: 0.02
+  max_speed_deg_s: [180, 180, 180, 180, 360, 360, 360]
+  weight_kg: 17.0
+  ip_rating: IP54
+  force_torque_sensor: integrated
+
+communication:
+  ip_address: 192.168.1.13
+  subnet_mask: 255.255.255.0
+  gateway: 192.168.1.1
+  protocol: ROKAE_SDK
+  port: 20000
+  timeout_ms: 3000
+  heartbeat_interval_ms: 200
+
+tools:
+  gripper:
+    type: electric_parallel
+    stroke_mm: 12.0
+    force_n: 20.0
+    open_time_ms: 100
+    close_time_ms: 140
+    tcp_offset: [0.0, 0.0, 140.0, 0.0, 0.0, 0.0]
+  screwdriver:
+    type: electric_spindle
+    max_torque_nm: 2.0
+    max_speed_rpm: 800
+    bit_type: PH0
+    tcp_offset: [0.0, 0.0, 165.0, 0.0, 0.0, 0.0]
+
+screw_profile: M2.5x6
+screw_count_per_cycle: 2
+screw_feeder_id: feeder_r3
+
+active_variants:
+  - ACT_11
+  - ACT_18
+# Note: R3 is idle during ACT_8 production
+
+home_position:
+  joints_deg: [0.0, -45.0, 0.0, 90.0, 0.0, -45.0, 0.0]
+
+speed_profiles:
+  fast:
+    joint_speed_pct: 60
+    linear_speed_mm_s: 300
+  normal:
+    joint_speed_pct: 35
+    linear_speed_mm_s: 150
+  slow:
+    joint_speed_pct: 12
+    linear_speed_mm_s: 25
+  screw_approach:
+    joint_speed_pct: 5
+    linear_speed_mm_s: 8
+
+work_objects:
+  turntable_zone3:
+    frame: [200.0, 300.0, 750.0, 0.0, 0.0, 0.0]
+  screw_feeder:
+    frame: [500.0, 500.0, 850.0, 0.0, 0.0, 0.0]
+
+assembly_sequence:
+  - step: mount_brake_base
+    description: Pick brake magnet base and seat on assembly
+    duration_ms: 8000
+    force_control: true
+    force_limit_n: 5.0
+  - step: screw_1
+    description: "M2.5x6 screw #1"
+    duration_ms: 7000
+  - step: screw_2
+    description: "M2.5x6 screw #2"
+    duration_ms: 7000
+
+safety:
+  zone: ZONE3
+  max_speed_mm_s: 250.0
+  collision_detection_threshold_nm: 6.0
+  force_control_enabled: true

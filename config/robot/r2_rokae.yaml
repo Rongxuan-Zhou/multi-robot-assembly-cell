@@ -1,0 +1,100 @@
+# ================================================================
+# OP08#-1 — Robot R2 Configuration (ROKAE xMate ER7)
+# Role: Main assembly — motor mount + motor + 4 screws (M2.5x4)
+# ================================================================
+
+robot:
+  id: R2_ROKAE
+  brand: ROKAE
+  model: xMate ER7
+  serial_number: RK-2024-R2-0142
+  role: main_assembly
+
+specifications:
+  dof: 7
+  payload_kg: 7.0
+  reach_mm: 912.0
+  repeatability_mm: 0.02
+  max_speed_deg_s: [180, 180, 180, 180, 360, 360, 360]
+  weight_kg: 23.5
+  ip_rating: IP54
+  force_torque_sensor: integrated    # 7-axis collaborative
+
+communication:
+  ip_address: 192.168.1.12
+  subnet_mask: 255.255.255.0
+  gateway: 192.168.1.1
+  protocol: ROKAE_SDK
+  port: 20000
+  timeout_ms: 3000
+  heartbeat_interval_ms: 200
+
+tools:
+  gripper:
+    type: electric_parallel
+    stroke_mm: 15.0
+    force_n: 25.0
+    open_time_ms: 120
+    close_time_ms: 160
+    tcp_offset: [0.0, 0.0, 155.0, 0.0, 0.0, 0.0]
+  screwdriver:
+    type: electric_spindle
+    max_torque_nm: 2.0
+    max_speed_rpm: 1000
+    bit_type: PH0
+    tcp_offset: [0.0, 0.0, 180.0, 0.0, 0.0, 0.0]
+
+screw_profile: M2.5x4
+screw_count_per_cycle: 4
+screw_feeder_id: feeder_r2
+
+home_position:
+  joints_deg: [0.0, -45.0, 0.0, 90.0, 0.0, -45.0, 0.0]
+
+speed_profiles:
+  fast:
+    joint_speed_pct: 70
+    linear_speed_mm_s: 400
+  normal:
+    joint_speed_pct: 40
+    linear_speed_mm_s: 200
+  slow:
+    joint_speed_pct: 15
+    linear_speed_mm_s: 30
+  screw_approach:
+    joint_speed_pct: 5
+    linear_speed_mm_s: 10
+
+work_objects:
+  turntable_zone2:
+    frame: [200.0, -300.0, 750.0, 0.0, 0.0, 0.0]
+  screw_feeder:
+    frame: [500.0, -500.0, 850.0, 0.0, 0.0, 0.0]
+
+assembly_sequence:
+  - step: mount_motor_body
+    description: Pick motor mount and seat on fixture
+    duration_ms: 8000
+  - step: insert_motor
+    description: Pick motor and insert into mount
+    duration_ms: 10000
+    force_control: true
+    force_limit_n: 8.0
+  - step: screw_1
+    description: "M2.5x4 screw #1"
+    duration_ms: 6000
+  - step: screw_2
+    description: "M2.5x4 screw #2"
+    duration_ms: 6000
+  - step: screw_3
+    description: "M2.5x4 screw #3"
+    duration_ms: 6000
+  - step: screw_4
+    description: "M2.5x4 screw #4"
+    duration_ms: 6000
+
+safety:
+  zone: ZONE2
+  max_speed_mm_s: 250.0
+  collision_detection_threshold_nm: 8.0
+  force_control_enabled: true
