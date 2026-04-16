@@ -143,7 +143,7 @@ The CODESYS runtime runs as a Docker/Podman container with real-time privileges:
 
 | Task | Priority | Cycle Time | Purpose |
 |:-----|:---------|:-----------|:--------|
-| **EtherCAT_Task** | Highest (1) | 125 us | EtherCAT PDO exchange, servo control loops |
+| **EtherCAT_Task** | Highest (1) | 1 ms | EtherCAT PDO exchange, servo control loops |
 | **Motion_Task** | High (10) | 1 ms | SoftMotion axis interpolation, turntable indexing |
 | **Safety_Task** | High (15) | 4 ms | FSoE protocol processing, safety state machine |
 | **Main_Task** | Normal (20) | 10 ms | Assembly sequence state machine, robot coordination |
@@ -202,7 +202,7 @@ The IgH EtherCAT Master is a kernel-space implementation providing microsecond-l
 
 | Parameter | Value | Description |
 |:----------|:------|:------------|
-| **Cycle time** | 125 us | EtherCAT bus cycle period |
+| **Cycle time** | 1 ms | EtherCAT bus cycle period |
 | **DC mode** | Distributed Clocks enabled | Sub-microsecond synchronization across all slaves |
 | **DC reference** | First slave (R1 FANUC) | Reference clock for DC synchronization |
 | **Domains** | 4 (Robot, Servo, I/O, Safety) | PDO data grouped by function |
@@ -231,7 +231,7 @@ sudo modprobe ec_master main_devices="XX:XX:XX:XX:XX:XX"
 
 | Metric | Target | Measured |
 |:-------|:-------|:---------|
-| **Bus cycle** | 125 us | 125 us +/- 0.2 us |
+| **Bus cycle** | 1 ms | 1 ms +/- 0.2 us |
 | **Jitter** | < 5 us | < 1 us (isolated core) |
 | **Frame size** | < 1500 bytes | ~820 bytes (all PDOs) |
 | **DC sync error** | < 100 ns | < 50 ns (after convergence) |

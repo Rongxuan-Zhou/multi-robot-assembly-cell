@@ -126,10 +126,9 @@ void ScrewDriverController::run_tightening_fsm(uint8_t* domain_data)
 
     // Update accumulated angle
     int32_t current_pos = spindle_.actual_position();
-    // Assume 4096 counts/rev for spindle encoder
-    static constexpr double kCountsPerDeg = 4096.0 / 360.0;
+    const double counts_per_deg = static_cast<double>(active_spec_.encoder_cpr) / 360.0;
     accumulated_angle_ = static_cast<double>(current_pos - angle_ref_pos_)
-                       / kCountsPerDeg;
+                       / counts_per_deg;
 
     ++phase_timer_;
 
@@ -147,7 +146,8 @@ void ScrewDriverController::run_tightening_fsm(uint8_t* domain_data)
                 spindle_.set_operation_mode(OperationMode::CSV);
                 // Approach speed in counts/s
                 int32_t approach_vel = static_cast<int32_t>(
-                    active_spec_.approach_speed_rpm / 60.0 * 4096.0);
+                    active_spec_.approach_speed_rpm / 60.0
+                    * static_cast<double>(active_spec_.encoder_cpr));
                 spindle_.set_target_velocity(approach_vel);
             }
             break;
@@ -163,7 +163,8 @@ void ScrewDriverController::run_tightening_fsm(uint8_t* domain_data)
                 phase_.store(ScrewPhase::SNUG);
 
                 int32_t snug_vel = static_cast<int32_t>(
-                    active_spec_.snug_speed_rpm / 60.0 * 4096.0);
+                    active_spec_.snug_speed_rpm / 60.0
+                    * static_cast<double>(active_spec_.encoder_cpr));
                 spindle_.set_target_velocity(snug_vel);
                 printf("[%s] Snug detected at %.3f Nm\n",
                        name_.c_str(), current_torque_nm);
@@ -191,7 +192,8 @@ void ScrewDriverController::run_tightening_fsm(uint8_t* domain_data)
                 spindle_.set_target_torque(target_trq);
 
                 int32_t final_vel = static_cast<int32_t>(
-                    active_spec_.final_speed_rpm / 60.0 * 4096.0);
+                    active_spec_.final_speed_rpm / 60.0
+                    * static_cast<double>(active_spec_.encoder_cpr));
                 spindle_.set_target_velocity(final_vel);
             }
             break;

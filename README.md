@@ -67,7 +67,7 @@ The forward-looking architecture replaces the original Siemens SICAR stack with 
 - Turntable rotates 120 degrees to advance workpieces through 3 zones
 - R2 (ROKAE) performs motor assembly: placement, alignment, 4x M2.5x4 screw tightening
 - R3 (ROKAE) performs brake magnet assembly (Actuator #11&#18 only): 2x M2.5x6 screws
-- EtherCAT fieldbus synchronizes all axes at 125 microsecond cycle time
+- EtherCAT fieldbus synchronizes all axes at 1 ms cycle time
 
 </td></tr>
 </table>
@@ -83,7 +83,7 @@ The forward-looking architecture replaces the original Siemens SICAR stack with 
 | **Robots** | 1x FANUC (material handling) + 2x ROKAE 6-axis (assembly process) |
 | **Screws** | M2.5x4 hex socket CSK (x4, motor mount) + M2.5x6 hex socket CSK (x2, brake magnet) |
 | **Control** | CODESYS Virtual Control SL on IPC (i7/Xeon, 32GB, PREEMPT_RT Linux) |
-| **Fieldbus** | EtherCAT 1 Gbps, 125 microsecond cycle, IgH kernel-space master |
+| **Fieldbus** | EtherCAT 1 Gbps, 1 ms cycle, IgH kernel-space master |
 | **Safety** | FSoE (Fail Safe over EtherCAT) SIL3, ISO 13849-1 PLd, ISO 10218 robot safety zones |
 | **Connectivity** | OPC UA for MES integration, MQTT for cloud telemetry |
 
@@ -95,7 +95,7 @@ The forward-looking architecture replaces the original Siemens SICAR stack with 
 flowchart TB
     subgraph IPC["Industrial PC (i7/Xeon, 32GB, PREEMPT_RT Linux)"]
         CODESYS["<b>CODESYS Virtual Control SL</b><br/><i>Containerized IEC 61131-3 Soft PLC</i><br/><i>SoftMotion CNC/Robotics</i>"]
-        IGH["<b>IgH EtherCAT Master</b><br/><i>Kernel module, DC sync</i><br/><i>125 us cycle, &lt;1 us jitter</i>"]
+        IGH["<b>IgH EtherCAT Master</b><br/><i>Kernel module, DC sync</i><br/><i>1 ms cycle, &lt;1 us jitter</i>"]
         OPCUA["<b>OPC UA Server</b><br/><i>MES integration</i>"]
         MQTT["<b>MQTT Client</b><br/><i>Cloud telemetry</i>"]
     end
@@ -244,7 +244,7 @@ Hardware and system configuration (directory structure prepared, YAML files popu
 | Layer | Components |
 |:------|:-----------|
 | **Soft PLC** | CODESYS Virtual Control SL (containerized IEC 61131-3), SoftMotion CNC/Robotics, Structured Text / Ladder Logic |
-| **Fieldbus** | EtherCAT (1 Gbps, 125 us cycle), IgH EtherCAT Master (kernel module, PREEMPT_RT 5.15-rt), distributed clock synchronization |
+| **Fieldbus** | EtherCAT (1 Gbps, 1 ms cycle), IgH EtherCAT Master (kernel module, PREEMPT_RT 5.15-rt), distributed clock synchronization |
 | **Safety** | FSoE (Fail Safe over EtherCAT) SIL3, CODESYS Virtual Safe Control (2026), ISO 13849-1 PLd Category 3 |
 | **Robots** | 1x FANUC (material handling, vision + gripper + suction combo tool) + 2x ROKAE (6-axis, screw tightening process robots) |
 | **Vision** | 2D industrial cameras on R1 (part localization in trays) and R2 (screw hole alignment), GigE Vision interface |

@@ -19,6 +19,7 @@ struct ScrewSpec {
     double snug_speed_rpm;
     double final_speed_rpm;
     double snug_torque_nm;      // transition threshold from approach to snug
+    uint32_t encoder_cpr = 4096; // encoder counts per revolution (default 4096)
 };
 
 // ---------------------------------------------------------------------------

@@ -56,12 +56,11 @@ void TurntableController::generate_trajectory()
     double dist_deg = std::abs(
         counts_to_deg(traj_target_ - traj_start_));
 
-    // Duration from trapezoidal estimate with S-curve:
-    // peak velocity with S-curve is ~1.875 * dist/T, solve for T
-    // Using simplified approach: T = max(dist/max_vel, sqrt(dist/max_acc)) * 1.5
-    double t_vel = dist_deg / max_vel_;
-    double t_acc = std::sqrt(2.0 * dist_deg / max_acc_);
-    traj_duration_ = std::max(t_vel, t_acc) * 1.5;  // safety margin
+    // For 5th-order polynomial S-curve, peak velocity = 1.875 * avg_velocity.
+    // Minimum time = distance / (peak_velocity_allowable / 1.875).
+    double t_vel = dist_deg * 1.875 / max_vel_;  // Time limited by velocity
+    double t_acc = std::sqrt(5.7735 * dist_deg / max_acc_);  // Time limited by acceleration (5th order)
+    traj_duration_ = std::max(t_vel, t_acc) * 1.1;  // 10% safety margin
 
     // Number of trajectory points at 1kHz
     traj_length_ = static_cast<uint32_t>(traj_duration_ * 1000.0) + 1;

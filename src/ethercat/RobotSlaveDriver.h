@@ -122,6 +122,7 @@ private:
 
     ec_slave_config_t* sc_ = nullptr;
     RobotPdoOffsets    off_{};
+    bool               activated_ = false;
 
     // Commanded values (written by application, read by RT loop)
     std::atomic<uint16_t>      controlword_cmd_{0};
@@ -148,4 +149,5 @@ private:
     DriveState              target_state_{DriveState::SWITCH_ON_DISABLED};
     bool                    enable_requested_ = false;
     bool                    homing_active_    = false;
+    std::atomic<bool>       fault_reset_pending_{false};
 };

@@ -76,10 +76,19 @@ RobotSlaveDriver::RobotSlaveDriver(const std::string& name,
 }
 
 // ---------------------------------------------------------------------------
-// configure  --  called before master activation
+// configure  --  MUST be called before master activation.
+//                PDO entries are registered per-slave here, and the IgH
+//                master finalises all domain mappings during activate().
+//                Calling configure() after activation is a fatal error.
 // ---------------------------------------------------------------------------
 bool RobotSlaveDriver::configure(ec_master_t* master, ec_domain_t* domain)
 {
+    if (activated_) {
+        fprintf(stderr, "[%s] ERROR: Cannot configure after master activation\n",
+                name_.c_str());
+        return false;
+    }
+
     sc_ = ecrt_master_slave_config(master, alias_, position_,
                                    vendor_id_, product_code_);
     if (!sc_) {
@@ -143,6 +152,17 @@ void RobotSlaveDriver::read_inputs(uint8_t* domain_data)
     uint16_t sw = EC_READ_U16(domain_data + off_.statusword);
     statusword_.store(sw, std::memory_order_relaxed);
     drive_state_.store(decode_statusword(sw), std::memory_order_relaxed);
+
+    // CiA 402 fault reset requires a rising edge on bit 7.
+    // After the previous cycle wrote CW_FAULT_RESET, clear it here
+    // so the next write_outputs() produces the falling edge.
+    if (fault_reset_pending_.load(std::memory_order_relaxed)) {
+        uint16_t cw = controlword_cmd_.load(std::memory_order_relaxed);
+        if (cw & CW_FAULT_RESET) {
+            controlword_cmd_.store(0, std::memory_order_relaxed);
+            fault_reset_pending_.store(false, std::memory_order_relaxed);
+        }
+    }
 
     actual_position_.store(
         EC_READ_S32(domain_data + off_.actual_position),
@@ -266,8 +286,10 @@ bool RobotSlaveDriver::fault_reset()
     DriveState ds = drive_state_.load(std::memory_order_relaxed);
     if (ds != DriveState::FAULT) return false;
 
-    // Rising edge on fault reset bit
+    // Rising edge on fault reset bit: set the bit now; the next
+    // read_inputs() cycle will clear it to complete the rising edge.
     controlword_cmd_.store(CW_FAULT_RESET, std::memory_order_relaxed);
+    fault_reset_pending_.store(true, std::memory_order_relaxed);
     return true;
 }
 

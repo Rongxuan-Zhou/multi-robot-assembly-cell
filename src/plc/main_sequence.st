@@ -102,6 +102,15 @@ VAR
     bAllZonesDone       : BOOL := FALSE;
     bCycleComplete      : BOOL := FALSE;
     bFirstScan          : BOOL := TRUE;
+
+    (* ---- Turntable handshake (PLC <-> C++ controller) ---- *)
+    nTurntableSeqState  : INT := 0;
+    bTurntableUnclampCmd: BOOL := FALSE;
+    bTurntableUnclampAck: BOOL := FALSE;
+    bTurntableIndexCmd  : BOOL := FALSE;
+    bTurntableIndexAck  : BOOL := FALSE;
+    bTurntableClampedAck: BOOL := FALSE;
+    TON_TurntableTimeout: TON;
 END_VAR
 
 (* ================================================================
@@ -424,42 +433,73 @@ CASE eCellState OF
                 eCellState := E_CellState.ERROR;
         END_CASE
 
-        (* ----- Turntable interlock and rotation ----- *)
+        (* ----- Turntable interlock and rotation (state-based handshake) ----- *)
         bAllZonesDone := (eZone1State = E_ZoneState.DONE)
                      AND (eZone2State = E_ZoneState.DONE)
                      AND (eZone3State = E_ZoneState.DONE);
 
-        IF bAllZonesDone AND NOT bCycleComplete THEN
-            (* Unclamp → rotate 120° → clamp *)
-            bTurntableUnclamp := TRUE;
-            IF NOT bTurntableClamped THEN
-                bTurntableUnclamp := FALSE;
-                bTurntableIndex := TRUE;
+        (* Turntable index sequence with explicit handshake *)
+        CASE nTurntableSeqState OF
+            0: (* Wait for all zones done *)
+                IF bAllZonesDone AND NOT bCycleComplete THEN
+                    bTurntableUnclampCmd := TRUE;
+                    nTurntableSeqState := 1;
+                    TON_TurntableTimeout(IN := FALSE);
+                END_IF;
 
-                IF bTurntableAtPosition THEN
-                    bTurntableIndex := FALSE;
-                    bTurntableClamp := TRUE;
+            1: (* Wait for unclamp acknowledgement from C++ controller *)
+                IF bTurntableUnclampAck THEN
+                    bTurntableUnclampCmd := FALSE;
+                    nTurntableSeqState := 2;
+                    TON_TurntableTimeout(IN := FALSE);
+                END_IF;
+                (* Timeout watchdog *)
+                TON_TurntableTimeout(IN := TRUE, PT := T#5s);
+                IF TON_TurntableTimeout.Q THEN
+                    nTurntableSeqState := 99; (* Error *)
+                END_IF;
 
-                    IF bTurntableClamped THEN
-                        bTurntableClamp := FALSE;
-                        bTurntableReady := TRUE;
-                        bCycleComplete := TRUE;
+            2: (* Command index rotation *)
+                bTurntableIndexCmd := TRUE;
+                nTurntableSeqState := 3;
+                TON_TurntableTimeout(IN := FALSE);
 
-                        (* Update statistics *)
-                        tCycleTimer(IN := FALSE);
-                        tCycleDuration_ms := TIME_TO_UDINT(tCycleTimer.ET);
-                        nCycleCount := nCycleCount + 1;
-                        nGoodCount  := nGoodCount + 1;
+            3: (* Wait for index complete acknowledgement *)
+                IF bTurntableIndexAck THEN
+                    bTurntableIndexCmd := FALSE;
+                    nTurntableSeqState := 4;
+                    TON_TurntableTimeout(IN := FALSE);
+                END_IF;
+                (* Timeout watchdog *)
+                TON_TurntableTimeout(IN := TRUE, PT := T#5s);
+                IF TON_TurntableTimeout.Q THEN
+                    nTurntableSeqState := 99; (* Error *)
+                END_IF;
 
-                        (* Simple OEE calculation *)
-                        IF nCycleCount > 0 THEN
-                            rOEE := UDINT_TO_REAL(nGoodCount)
-                                  / UDINT_TO_REAL(nCycleCount);
-                        END_IF
+            4: (* Wait for clamp confirmation *)
+                IF bTurntableClampedAck THEN
+                    nTurntableSeqState := 0; (* Ready for next cycle *)
+                    bTurntableReady := TRUE;
+                    bCycleComplete := TRUE;
+
+                    (* Update statistics *)
+                    tCycleTimer(IN := FALSE);
+                    tCycleDuration_ms := TIME_TO_UDINT(tCycleTimer.ET);
+                    nCycleCount := nCycleCount + 1;
+                    nGoodCount  := nGoodCount + 1;
+
+                    (* Simple OEE calculation *)
+                    IF nCycleCount > 0 THEN
+                        rOEE := UDINT_TO_REAL(nGoodCount)
+                              / UDINT_TO_REAL(nCycleCount);
                     END_IF
-                END_IF
-            END_IF
-        END_IF
+                END_IF;
+
+            99: (* Error state *)
+                bTurntableUnclampCmd := FALSE;
+                bTurntableIndexCmd := FALSE;
+                eCellState := E_CellState.ERROR;
+        END_CASE;
 
         (* Reset for next cycle *)
         IF bCycleComplete THEN

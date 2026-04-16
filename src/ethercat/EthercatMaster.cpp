@@ -50,6 +50,7 @@ static inline int64_t timespec_diff_ns(const struct timespec* a,
 // ---------------------------------------------------------------------------
 // Construction / Destruction
 // ---------------------------------------------------------------------------
+// 1ms cycle time (1000us), suitable for multi-robot assembly cell
 EthercatMaster::EthercatMaster(unsigned master_index, uint32_t cycle_time_us)
     : cycle_time_us_(cycle_time_us)
     , master_index_(master_index)
