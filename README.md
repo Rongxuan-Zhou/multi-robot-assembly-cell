@@ -2,7 +2,7 @@
 
 # Multi-Robot Assembly Cell
 
-### Harmonic Reducer Actuator Motor Assembly -- OP08#-1 Workstation
+### 3-Robot EtherCAT Assembly Cell for Harmonic Reducer Production
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org)
