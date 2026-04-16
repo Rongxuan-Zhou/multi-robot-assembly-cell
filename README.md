@@ -10,7 +10,7 @@
 [![Fieldbus: EtherCAT](https://img.shields.io/badge/Fieldbus-EtherCAT%201Gbps-E4002B.svg)](https://www.ethercat.org)
 [![Robot: FANUC](https://img.shields.io/badge/Robot-FANUC-FFD700.svg)](https://www.fanuc.com)
 [![Robot: ROKAE](https://img.shields.io/badge/Robot-ROKAE%20%E7%8F%9E%E7%9F%B3-00A651.svg)](https://www.rokae.com)
-[![Safety: ISO 13849 PLd](https://img.shields.io/badge/Safety-ISO%2013849%20PLd-red.svg)](#safety-architecture)
+[![Safety: ISO 13849 PLd](https://img.shields.io/badge/Safety-ISO%2013849%20PLd-red.svg)](#technology-stack)
 
 *Portfolio project reverse-engineering a multi-robot harmonic reducer assembly workstation*
 *from CloudMinds Robotics. 3 coordinated robots, 120-degree turntable, 94-second takt time.*
