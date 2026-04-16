@@ -26,12 +26,12 @@
 ## Workstation Overview
 
 <p align="center">
-  <img src="docs/images/workstation_3d_layout.png" width="48%" alt="3D isometric view of OP08#-1 workstation"/>
-  <img src="docs/images/workstation_cad_topview.png" width="48%" alt="CAD top-down view showing R1/R2/R3 positions"/>
+  <img src="docs/images/workstation_3d_layout.png" width="75%" alt="3D isometric view of assembly workstation"/>
 </p>
 
 <p align="center">
-  <img src="docs/images/production_line_layout.png" width="70%" alt="Full production line with multiple OP-8 workstations"/>
+  <img src="docs/images/workstation_cad_topview.png" width="48%" alt="CAD top-down view showing R1/R2/R3 positions"/>
+  <img src="docs/images/production_line_layout.png" width="48%" alt="Full production line with multiple workstations"/>
 </p>
 
 <p align="center">
