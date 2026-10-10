@@ -9,9 +9,9 @@ class RobotSlaveDriver;
 // Turntable stations (120-degree indexed positions)
 // ---------------------------------------------------------------------------
 enum class Station : uint8_t {
-    STATION_1 = 0,   //   0 deg  -- loading
-    STATION_2 = 1,   // 120 deg  -- assembly
-    STATION_3 = 2,   // 240 deg  -- unloading
+    STATION_1 = 0,   //   0 deg -- R1 load/unload (Zone 1)
+    STATION_2 = 1,   // 120 deg -- R2 motor assembly (Zone 2)
+    STATION_3 = 2,   // 240 deg -- R3 brake magnet base; R2 returns product here (Zone 3)
 };
 
 enum class TurntableState : uint8_t {

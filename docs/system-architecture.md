@@ -9,6 +9,7 @@ This document describes the complete control system architecture for the OP08#-1
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Standardized Workstation Platform](#standardized-workstation-platform)
 - [Industrial PC Platform](#industrial-pc-platform)
 - [CODESYS Virtual Control SL](#codesys-virtual-control-sl)
 - [IgH EtherCAT Master](#igh-ethercat-master)
@@ -18,6 +19,7 @@ This document describes the complete control system architecture for the OP08#-1
 - [OPC UA and MQTT Connectivity](#opc-ua-and-mqtt-connectivity)
 - [Network Topology](#network-topology)
 - [Digital Twin](#digital-twin)
+- [Design Assumptions](#design-assumptions)
 
 ---
 
@@ -51,14 +53,14 @@ flowchart TB
         R3["R3 ROKAE"]
         TT_SERVO["Turntable Servo"]
         SCREW_DRV["Screw Drivers x2"]
-        SCREW_FEED["Screw Feeders x3"]
+        SCREW_FEED["Screw Feeders x3<br/>(#1, #2 at R2; #3 at R3)"]
         REMOTE_IO["Remote I/O Modules"]
         SAFETY_IO["Safety I/O (FSoE)"]
     end
 
     subgraph SENSORS["Sensors and Actuators"]
         CAM1["R1 Camera<br/>(Part Localization)"]
-        CAM2["R2 Cameras x2<br/>(Screw Alignment)"]
+        CAM2["Tightening Cameras x2<br/>(R2, R3)"]
         CLAMP["Clamp Cylinders"]
         VALVE["Pneumatic Valves"]
         PROX["Proximity Sensors"]
@@ -81,10 +83,49 @@ flowchart TB
     IGH <-.->|"FSoE"| SAFETY_IO
     R1 --- CAM1
     R2 --- CAM2
+    R3 --- CAM2
     REMOTE_IO --- CLAMP
     REMOTE_IO --- VALVE
     REMOTE_IO --- PROX
 ```
+
+---
+
+## Standardized Workstation Platform
+
+OP08#-1 is one instance of the vendor's standardized workstation platform. The platform divides every station into three core areas; the equipment list below is the OP08#-1 instance.
+
+| Area | Position | Contents |
+|:-----|:---------|:---------|
+| **Material in/out** | Left | Incoming and finished-part racks in a C-shaped arrangement around the handling robot; stackers on both sides for rack-level changeover; standardized trays |
+| **Flexible rotary table** | Center | Flexible mother plate, diameter 1-1.3 m, carrying 6-8 index plates x 3-4 small index plates = 18-32 fixture positions with a standardized fixture interface. OP08#-1 uses 6 x 3 = 18 |
+| **Process area** | Right | Standard cabinet-type worktop carrying the process robots and process equipment; a tool parking rack on the worktop holds swapped-out tools; robot, tool and vision controllers sit in the cabinet below |
+
+The generic platform spec places 1-2 four-axis process robots on the worktop. The OP08#-1 equipment list instead specifies 2 six-axis ROKAE process robots (R2, R3), which is what this repo models.
+
+<p align="center">
+  <img src="images/pdf_pages/turntable_design.png" width="48%" alt="Flexible rotary table: mother plate, index plates, small index plates"/>
+  <img src="images/pdf_pages/worktable_design.png" width="48%" alt="Cabinet-type worktop with process robot, tool parking rack and controllers below"/>
+</p>
+<p align="center"><em>Left: flexible rotary table (mother plate / index plate / small index plate). Right: cabinet-type worktop with controllers in the cabinet below. Source: vendor deck, pages 7-8.</em></p>
+
+### OP08#-1 Equipment List
+
+| Equipment | Qty | Notes |
+|:----------|:----|:------|
+| Handling robot (R1, FANUC) | 1 | Tray-to-turntable loading, turntable-to-conveyor unloading |
+| Handling vision | 1 | On the R1 combo end-effector (vision + gripper + suction cup, quick-change) |
+| Flexible rotary table | 1 | 6 index plates x 3 small index plates = 18 fixture positions |
+| Workbench | 1 | Shared workbench fixture between R2 and R3 |
+| Box stackers | 3 | Rack-level tray changeover |
+| Trays | 15 | Standardized trays (5 per stacker assumed) |
+| Process robots (6-axis, ROKAE) | 2 | R2, R3 |
+| Screw feeders | 3 | #1, #2 serve R2; #3 serves R3 |
+| Tightening equipment | 2 | One per process robot |
+| Tightening vision | 2 | One per tightening equipment (R2, R3) |
+| Bit changer | 1 | Shared |
+
+Not used on OP08#-1: flexible vibratory feeder, vibratory-feeder vision, AUBO cobot, assembly vision, TM gear-meshing robot, press, laser welder.
 
 ---
 
@@ -253,7 +294,7 @@ The EtherCAT network connects all field devices in a logical ring (physical star
 | 3 | Turntable Servo Drive | CoE (CiA 402) | Vendor-specific | Target pos, velocity | Actual pos, torque | Yes |
 | 4 | Screw Driver 1 | CoE (vendor profile) | Atlas Copco | Torque target, angle | Torque actual, status | Yes |
 | 5 | Screw Driver 2 | CoE (vendor profile) | Atlas Copco | Torque target, angle | Torque actual, status | Yes |
-| 6 | Screw Feeder Controller | Digital I/O | Vendor-specific | Feed command | Feed complete, count | No |
+| 6 | Screw Feeder Controllers (x3) | Digital I/O | Vendor-specific | Feed command | Feed complete, count | No |
 | 7 | Remote I/O Module 1 | EL-series terminals | Beckhoff | 16 DO | 16 DI | No |
 | 8 | Remote I/O Module 2 | EL-series terminals | Beckhoff | 16 DO | 16 DI | No |
 | 9 | Remote I/O Module 3 | EL-series terminals | Beckhoff | 8 AO | 8 AI | Yes |
@@ -285,7 +326,7 @@ IPC (Port 1) ---> R1 FANUC ---> R2 ROKAE ---> R3 ROKAE
                                                     |
                                   Remote I/O 1 ---> Remote I/O 2 ---> Remote I/O 3
                                                     |
-                                  Screw Feeder ---> (return to IPC Port 1)
+                                  Screw Feeders (x3) ---> (return to IPC Port 1)
 ```
 
 ---
@@ -326,16 +367,18 @@ The workstation employs 2D industrial cameras for part localization and screw ho
 
 | Camera | Location | Interface | Resolution | Function |
 |:-------|:---------|:----------|:-----------|:---------|
-| **R1 Camera** | Mounted on R1 end-effector | GigE Vision | 5 MP | Motor mount body localization in trays, motor localization, brake magnet base localization |
-| **R2 Camera 1** | Fixed above R2 worktable | GigE Vision | 5 MP | Screw hole position detection on motor mount body |
-| **R2 Camera 2** | Mounted on R2 screw driver | GigE Vision | 2 MP | Screw alignment and tightening verification |
+| **R1 handling camera** | On the R1 combo end-effector | GigE Vision | 5 MP | Part localization in trays: motor mounting body, motor, brake magnet base |
+| **R2 tightening camera** | On the R2 screwdriver end-effector (mounting is an assumption; the source only states one tightening-vision unit per tightening equipment) | GigE Vision | 2 MP | Screw hole alignment and tightening verification |
+| **R3 tightening camera** | On the R3 screwdriver end-effector (same assumption) | GigE Vision | 2 MP | Screw hole alignment and tightening verification |
+
+Source: 1 handling vision + 2 tightening vision units (equipment list).
 
 ### Vision Processing Pipeline
 
 1. **Image acquisition**: GigE Vision hardware-triggered capture synchronized with robot position
 2. **Part localization** (R1): Template matching or contour-based detection of parts in structured trays
 3. **Coordinate transformation**: Camera-to-robot TCP calibration (hand-eye calibration)
-4. **Screw hole detection** (R2): Circular Hough transform or blob detection for M2.5 screw holes
+4. **Screw hole detection** (R2 / R3): Circular Hough transform or blob detection for M2.5 screw holes
 5. **Offset calculation**: Compute robot position correction in X, Y, Rz for accurate placement
 6. **Result communication**: Vision results passed to CODESYS via shared memory or TCP socket
 
@@ -412,7 +455,7 @@ The workstation uses three physically separated network segments:
 |:-----|:---|:-------|:--------|:--------|
 | **EtherCAT** | N/A | No IP stack | Real-time fieldbus | All EtherCAT slaves (direct, no switch) |
 | **OPC UA** | 10 | 192.168.10.0/24 | MES/SCADA communication | IPC (.1), MES server (.10), HMI panel (.20) |
-| **Vision** | 20 | 192.168.20.0/24 | Camera data transfer | IPC (.1), R1 camera (.11), R2 camera 1 (.12), R2 camera 2 (.13) |
+| **Vision** | 20 | 192.168.20.0/24 | Camera data transfer | IPC (.1), R1 camera (.11), R2 tightening camera (.12), R3 tightening camera (.13) |
 | **Management** | 30 | 192.168.30.0/24 | Remote access, MQTT | IPC (.1), gateway (.254), MQTT broker (.10) |
 
 ### Firewall Rules
@@ -444,6 +487,22 @@ Real-time 3D visualization of the workstation synchronized via MQTT telemetry:
 - Alarm visualization with flashing components
 - Cycle time Gantt chart overlay
 - Historical playback from logged telemetry data
+
+---
+
+## Design Assumptions
+
+The vendor deck specifies the station mechanically and process-wise: the three robots, the flexible rotary table, the screw feeders, the tightening and vision equipment counts, the 17-step sequence and the cycle times. It names Siemens SICAR as the software standard. Everything else in this document is this repo's forward-looking design, not taken from the deck:
+
+| Item | Status |
+|:-----|:-------|
+| CODESYS Virtual Control SL soft PLC, IgH EtherCAT Master, FSoE safety layer | Repo design choice (deck: Siemens SICAR) |
+| OPC UA / MQTT connectivity, digital twin | Repo design choice |
+| IPC hardware specification, PREEMPT_RT kernel configuration | Repo design choice |
+| Beckhoff I/O and safety terminals, Delta servo, Atlas Copco screwdrivers, Basler cameras | Representative part choices; the deck names no vendor |
+| ROKAE XB7L (R2) / XB7 (R3) | Representative models; the deck says only "6-axis ROKAE" |
+| All IP addresses, VLAN IDs, EtherCAT slave positions | Repo design choice |
+| Tightening-camera mounting on the screwdriver end-effector | Assumption |
 
 ---
 

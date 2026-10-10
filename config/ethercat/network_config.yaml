@@ -103,7 +103,7 @@ slaves:
     vendor_id: 0x00000539        # Atlas Copco
     product_code: 0x00000301
     name: Atlas_QST_R2
-    description: Screw Controller R2 (M2.5x4 motor mount)
+    description: "Screw Controller R2 (motor mount: M2.5x4 #8 / M2.5x6 #11&#18)"
 
   - alias: 0
     position: 8

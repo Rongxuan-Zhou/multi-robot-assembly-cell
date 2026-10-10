@@ -50,7 +50,8 @@ flowchart LR
 1. **Zone isolation**: Each robot operates exclusively within its assigned zone during the assembly phase
 2. **Turntable as barrier**: The turntable only rotates when all robots are retracted to safe positions
 3. **Bottleneck-driven takt**: The slowest zone (Zone 2, 94s) determines the system takt time
-4. **Pipeline parallelism**: All 3 zones operate concurrently on different workpieces
+4. **Pipeline parallelism**: All 3 zones operate concurrently on different workpieces, with a sequential handoff on the shared workbench between R2 and R3 (see [Source Interpretation Notes](process-flow.md#source-interpretation-notes))
+5. **Dispatch model (source)**: Each device executes its tasks for the cycle, returns to HOME and reports ready; the next cycle is dispatched only when every device has reported ready
 
 ---
 
@@ -60,9 +61,9 @@ flowchart LR
 
 | Zone | Robot | Turntable Station | Workspace | Function |
 |:-----|:------|:------------------|:----------|:---------|
-| **Zone 1** | R1 (FANUC) | Station 1 | Tray stackers, conveyor, turntable station 1 | Material loading and finished product unloading |
-| **Zone 2** | R2 (ROKAE) | Station 2 | Turntable station 2, worktable, screw feeder 1 | Motor + mount body assembly, 4x screw tightening |
-| **Zone 3** | R3 (ROKAE) | Station 3 | Turntable station 3, worktable, screw feeder 2 | Brake magnet base assembly, 2x screw tightening |
+| **Zone 1** | R1 (FANUC) | Station 1 | Box stackers (3), belt conveyors, turntable station 1 | Finished product unloading, material loading, stacker tray changeover assist |
+| **Zone 2** | R2 (ROKAE, 6-axis) | Station 2 | Turntable station 2, shared workbench, screw feeders 1 and 2 | Motor + mounting body assembly, 4x screw tightening (M2.5x4 for #8 / M2.5x6 for #11&#18), transfer of the finished product to station 3 (step 17) |
+| **Zone 3** | R3 (ROKAE, 6-axis) | Station 3 | Turntable station 3, shared workbench, screw feeder 3 | Brake magnet base assembly, 2x M2.5x6 screw tightening (#11&#18 only) |
 
 ### Zone State Machine
 
@@ -132,7 +133,7 @@ Zone_N_Enable :=
 | **R3 -> Turntable** | R3 arm within turntable zone | Block turntable rotation |
 | **R1 -> Turntable** | R1 arm within turntable zone | Block turntable rotation |
 | **Turntable -> All robots** | Turntable rotating | Disable all robot motion |
-| **R2 -> R3 worktable** | R2 at worktable (step 17) | Block R3 worktable access |
+| **R2 -> R3 workbench** | R2 at workbench (step 17) | Block R3 workbench access |
 | **Clamp -> Robot** | Clamp engaged | Block robot approach to clamped zone |
 
 ### Signal Handshake Sequence
@@ -194,7 +195,7 @@ When a zone finishes before the bottleneck zone:
 | **Acceleration** | 120 deg/s^2 |
 | **Deceleration** | 120 deg/s^2 |
 | **Motion profile** | Trapezoidal velocity |
-| **Rotation duration** | ~2.0 seconds |
+| **Rotation duration** | ~2.5 seconds (0.5 s accel + 1.5 s cruise + 0.5 s decel) |
 | **Settling time** | ~0.3 seconds |
 | **Mechanical lock** | Pneumatic pin, sensor-confirmed |
 
@@ -207,41 +208,41 @@ When a zone finishes before the bottleneck zone:
 The three robots have physically separated primary workspaces, but potential overlap exists in two areas:
 
 1. **Turntable perimeter**: All 3 robots reach into the turntable zone for pick/place operations
-2. **Worktable area**: R2 and R3 share the worktable (R2 for steps 5-11, R3 for steps 12-16, R2 again for step 17)
+2. **Workbench area**: R2 and R3 share the workbench (R2 for steps 5-11, R3 for steps 12-16, R2 again for step 17)
 
 ### Prevention Strategy
 
 | Strategy | Implementation | Coverage |
 |:---------|:--------------|:---------|
 | **Zone isolation** | Robots only enter turntable zone when turntable is locked and their zone is enabled | Turntable perimeter |
-| **Sequential handoff** | R2 exits worktable before R3 enters; R3 exits before R2 returns for step 17 | Worktable area |
+| **Sequential handoff** | R2 exits workbench before R3 enters; R3 exits before R2 returns for step 17 | Workbench area |
 | **Software limits** | Robot joint/Cartesian space limits configured to prevent reaching into adjacent zones | All zones |
 | **Proximity monitoring** | Proximity sensors at zone boundaries detect unexpected robot presence | Critical boundaries |
 | **Safety zones** | ISO 10218 safety-rated monitored stop if robot approaches zone boundary | All zones |
 
-### Worktable Handoff Protocol
+### Workbench Handoff Protocol
 
-The worktable is shared between Zone 2 (R2) and Zone 3 (R3) within a single cycle:
+The workbench is shared between Zone 2 (R2) and Zone 3 (R3) within a single cycle:
 
 ```
-R2 steps 5-11: R2 owns worktable
+R2 steps 5-11: R2 owns workbench
     R2 places motor, aligns mount body, tightens screws
     R2 releases clamp (step 11)
-    R2 retracts from worktable
+    R2 retracts from workbench
     R2 signals: Worktable_Free = TRUE
 
 --- Turntable rotates (R2 and R3 both retracted) ---
 
-R3 steps 12-16: R3 owns worktable (only for #11&#18)
+R3 steps 12-16: R3 owns workbench (only for #11&#18)
     R3 waits for Worktable_Free from turntable cycle
     R3 places brake magnet base, tightens screws
     R3 releases clamp (step 16)
-    R3 retracts from worktable
+    R3 retracts from workbench
     R3 signals: Zone3_BrakeComplete = TRUE
 
-R2 step 17: R2 briefly re-enters worktable
+R2 step 17: R2 briefly re-enters workbench
     R2 waits for Zone3_BrakeComplete
-    R2 picks finished assembly from worktable
+    R2 picks finished assembly from workbench
     R2 places on turntable station 3
     R2 retracts
 ```
@@ -272,41 +273,42 @@ If any proximity sensor detects an unexpected robot presence:
 | | **Total (Actuator #11&#18)** | **50** |
 | | **Total (Actuator #8, skip step 4)** | **36** |
 
+Zone totals (50 / 94 / 88 s) are from the source; the per-step split is an estimate and matches [process-flow.md](process-flow.md).
+
 #### Zone 2 -- R2 Motor Assembly (94 seconds)
 
 | Step | Description | Time (s) |
 |:-----|:------------|:---------|
-| 5 | Pick motor -> worktable | 10 |
-| 6 | Wire harness dressing | 8 |
-| 7 | Pick mount body -> align over motor | 12 |
+| 5 | Pick motor -> workbench fixture | 10 |
+| 6 | Cable-dressing fixture arranges cables | 8 |
+| 7 | Pick mounting body -> lower onto motor | 12 |
 | 8 | Clamp press | 4 |
-| 9 | Pick 4x screws from feeder | 16 |
-| 10 | Auto-tighten 4 screws | 36 |
+| 9 | Pick 4x screws from feeder 1 (#8) / feeder 2 (#11&#18) | 16 |
+| 10 | Auto-tighten 4 screws | 40 |
 | 11 | Release clamp | 4 |
-| 17 | Return assembly to turntable | 4 |
 | | **Total** | **94** |
 
 #### Zone 3 -- R3 Brake Magnet Assembly (88 seconds)
 
 | Step | Description | Time (s) |
 |:-----|:------------|:---------|
-| 12 | Pick brake magnet base -> worktable | 12 |
+| 12 | Pick brake magnet base -> workbench fixture | 14 |
 | 13 | Clamp press | 4 |
-| 14 | Pick 2x screws from feeder | 10 |
-| 15 | Auto-tighten 2 screws | 20 |
+| 14 | Pick 2x screws from feeder 3 | 12 |
+| 15 | Auto-tighten 2 screws | 40 |
 | 16 | Release clamp | 4 |
-| | **Total (Actuator #11&#18)** | **50** |
-| | **Total (Actuator #8, all skipped)** | **0** |
-| | **Zone 3 total with step 17 wait** | **88** |
+| 17 | R2 returns assembly workbench -> station 3 (incl. handoff wait) | 14 |
+| | **Total (Actuator #11&#18)** | **88** |
+| | **Total (Actuator #8, steps 12-16 skipped)** | **14** |
 
 ### Overall Equipment Effectiveness (OEE) Targets
 
 | Factor | Target | Notes |
 |:-------|:-------|:------|
-| **Availability** | > 95% | Planned maintenance 1 hour/shift |
-| **Performance** | > 98% | Minimal speed losses (screw retry < 2%) |
-| **Quality** | > 99.5% | Torque verification on every screw |
-| **OEE** | > 93% | Product of A x P x Q |
+| **Availability** | > 90% | Planned maintenance 1 hour/shift |
+| **Performance** | > 96% | Minimal speed losses (screw retry < 2%) |
+| **Quality** | > 99% | Torque verification on every screw |
+| **OEE** | > 85% | Product of A x P x Q; matches `OEE_TARGET` in `system_config.py` (design target, not from the source) |
 
 ---
 
@@ -316,39 +318,45 @@ If any proximity sensor detects an unexpected robot presence:
 
 | Feature | Actuator #8 | Actuator #11&#18 |
 |:--------|:------------|:-----------------|
-| **Motor size** | 40mm (D47 x H17) | 60mm (D68 x H20.8) |
-| **Mount body size** | L120 x W86.8 x H33.75 | L155 x W80 x H53.6 |
-| **Motor screws** | M2.5x4 x4 | M2.5x4 x4 |
-| **Brake magnet** | None | Yes, M2.5x6 x2 |
+| **Motor** | 40 mm amorphous motor (D47 x H17) | 60 mm amorphous axial motor (D68 x H20.8) |
+| **Mounting body size** | L120 x W86.8 x H33.75 | L155 x W80 x H53.6 |
+| **Motor-mount screws** | M2.5x4 x4 (head dia 4.6 mm) | M2.5x6 x4 (head dia 5.6 mm) |
+| **R2 screw feeder** | Feeder 1 | Feeder 2 |
+| **Brake magnet base** | None | D20 x H24.55, M2.5x6 x2 from feeder 3 |
 | **R3 active** | No (standby) | Yes |
-| **Takt time** | 94s (R2 bottleneck) | 94s (R2 bottleneck) |
-| **Zone 3 time** | ~10s (step 17 only) | 88s |
+| **Takt time** | 94 s (R2 bottleneck) | 94 s (R2 bottleneck) |
+| **Zone 3 time** | ~14 s (step 17 only) | 88 s |
 
 ### Recipe System
 
 Product variants are managed through the PLC recipe system:
 
 ```
+(* Torque values are design assumptions; the source specifies screw sizes and counts only *)
+
 RECIPE: Actuator_8
-    Motor_Type := MOTOR_40MM
+    Motor_Type := MOTOR_40MM_AMORPHOUS
     Mount_Body_Type := MOUNT_120
     Screw1_Spec := M2_5_x_4
     Screw1_Count := 4
-    Screw1_Torque := 0.8..1.2 Nm
+    Screw1_Feeder := FEEDER_1
+    Screw1_Torque := 0.30 +/- 0.05 Nm
     BrakeMagnet_Enable := FALSE
     R3_Enable := FALSE
     Zone3_Skip := TRUE
     Vision_Template := "act8_templates"
 
 RECIPE: Actuator_11_18
-    Motor_Type := MOTOR_60MM
+    Motor_Type := MOTOR_60MM_AMORPHOUS_AXIAL
     Mount_Body_Type := MOUNT_155
-    Screw1_Spec := M2_5_x_4
+    Screw1_Spec := M2_5_x_6
     Screw1_Count := 4
-    Screw1_Torque := 0.8..1.2 Nm
+    Screw1_Feeder := FEEDER_2
+    Screw1_Torque := 0.50 +/- 0.08 Nm
     Screw2_Spec := M2_5_x_6
     Screw2_Count := 2
-    Screw2_Torque := 1.0..1.5 Nm
+    Screw2_Feeder := FEEDER_3
+    Screw2_Torque := 0.50 +/- 0.08 Nm
     BrakeMagnet_Enable := TRUE
     R3_Enable := TRUE
     Zone3_Skip := FALSE
@@ -360,7 +368,7 @@ RECIPE: Actuator_11_18
 1. Operator selects new variant on HMI
 2. PLC loads recipe parameters (automatic, ~2 seconds)
 3. Vision templates switch automatically
-4. R3 enable/disable flag updated
+4. R3 enable/disable flag and R2 screw profile / feeder selection updated
 5. If fixture change required: operator opens safety gate, swaps turntable sub-plates
 6. Safety gate closed, system re-armed
 7. First cycle runs with operator verification

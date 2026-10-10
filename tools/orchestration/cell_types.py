@@ -86,8 +86,8 @@ class ToolType(enum.Enum):
 
 class ScrewProfile(enum.Enum):
     """Screw tightening profile identifiers."""
-    M25x4 = "M2.5x4"   # Motor mount screws (R2)
-    M25x6 = "M2.5x6"   # Brake magnet base screws (R3)
+    M25x4 = "M2.5x4"   # Motor-mount screws, Actuator #8 only (R2)
+    M25x6 = "M2.5x6"   # Motor-mount screws for #11&#18 (R2) and brake magnet base screws (R3)
 
 
 class TrayType(enum.Enum):
@@ -102,7 +102,7 @@ class TrayType(enum.Enum):
 class CalibrationMode(enum.Enum):
     """Hand-eye calibration configurations."""
     EYE_IN_HAND = "eye_in_hand"       # Camera on robot flange (R1)
-    EYE_TO_HAND = "eye_to_hand"       # Camera fixed on worktable
+    EYE_TO_HAND = "eye_to_hand"       # Camera fixed in the cell (not used on OP08#-1; source lists eye-in-hand handling and tightening cameras only)
 
 
 # ---------------------------------------------------------------------------

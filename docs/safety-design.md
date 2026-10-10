@@ -265,27 +265,24 @@ The workstation is enclosed by safety fencing (ISO 14120) on all sides except wh
 Each robot has defined safety zones monitored by the safety system:
 
 ```
-+--------------------------------------------------+
-|                                                    |
-|    +------------+                                  |
-|    |  Zone 1    |    Shared        +------------+  |
-|    |  R1 FANUC  |    Turntable     |  Zone 2    |  |
-|    |            |    Area          |  R2 ROKAE  |  |
-|    +-----+------+                  +------+-----+  |
-|          |        +-----------+           |        |
-|          +------->| Turntable |<----------+        |
-|          |        | (120 deg) |           |        |
-|          |        +-----------+           |        |
-|    +-----+------+       ^          +------+-----+  |
-|    |  Tray      |       |          |  Worktable |  |
-|    |  Stackers  |       |          |  (shared)  |  |
-|    +------------+  +----+-----+    +------+-----+  |
-|                    |  Zone 3   |          |        |
-|                    |  R3 ROKAE |<---------+        |
-|                    |           |                    |
-|                    +-----------+                    |
-|                                                    |
-+--------------------------------------------------+
++------------------------------------------------------------------------+
+|   [ Belt conveyor ]                     [ Belt conveyor ]              |
+|                                                                        |
+|  +- Zone 3 (R3 ROKAE) --+                 +- Zone 1 (R1 FANUC) ------+ |
+|  | Screw feeder 3       |                 |                +-------+ | |
+|  |           R3 ------->| Station 3       |                | Tray  | | |
+|  +----------------------+  +-----------+  |                | stack | | |
+|  | Workbench fixture    |  | Turntable |  |                +-------+ | |
+|  | (shared, R2 and R3)  |  | (120 deg) | Station 1 <--- R1           | |
+|  +----------------------+  +-----------+  |                +-------+ | |
+|  +- Zone 2 (R2 ROKAE) --+                 |                | Tray  | | |
+|  | Screw feeder 2       |                 |                | stack | | |
+|  |           R2 ------->| Station 2       |                +-------+ | |
+|  | Screw feeder 1       |                 |                | Tray  | | |
+|  +----------------------+                 |                | stack | | |
+|                                           |                +-------+ | |
+|                                           +--------------------------+ |
++------------------------------------------------------------------------+
 ```
 
 ### Zone Monitoring Parameters
@@ -293,8 +290,8 @@ Each robot has defined safety zones monitored by the safety system:
 | Robot | Maximum Speed (Auto) | Maximum Speed (Manual/T1) | Position Envelope | SOS Window |
 |:------|:--------------------|:------------------------|:-----------------|:-----------|
 | **R1 FANUC** | 2000 mm/s | 250 mm/s | Zone 1 boundary + turntable | +/- 0.5 deg/joint |
-| **R2 ROKAE** | 1500 mm/s | 250 mm/s | Zone 2 boundary + turntable + worktable | +/- 0.5 deg/joint |
-| **R3 ROKAE** | 1500 mm/s | 250 mm/s | Zone 3 boundary + worktable | +/- 0.5 deg/joint |
+| **R2 ROKAE** | 1500 mm/s | 250 mm/s | Zone 2 boundary + turntable + workbench | +/- 0.5 deg/joint |
+| **R3 ROKAE** | 1500 mm/s | 250 mm/s | Zone 3 boundary + turntable (Station 3) + workbench | +/- 0.5 deg/joint |
 
 ### Collaborative Workspace Monitoring
 

@@ -8,7 +8,7 @@ can be overridden by YAML configs in ``config/``.
 
 from __future__ import annotations
 
-from src.data_types.cell_types import (
+from tools.orchestration.cell_types import (
     ActuatorVariant,
     EtherCATSlave,
     RobotID,
@@ -55,29 +55,31 @@ ROBOT_SPECS: dict[RobotID, dict] = {
         "tools": ["gripper", "suction", "vision"],
         "home_joints_deg": [0.0, -30.0, 0.0, 0.0, -60.0, 0.0],
     },
+    # 6-axis ROKAE per source equipment list; model is representative, source names no model
     RobotID.R2_ROKAE: {
         "brand": "ROKAE",
-        "model": "xMate ER7",
+        "model": "XB7L",
         "payload_kg": 7.0,
-        "reach_mm": 912.0,
-        "repeatability_mm": 0.02,
-        "dof": 7,
+        "reach_mm": 906.0,
+        "repeatability_mm": 0.03,
+        "dof": 6,
         "ip_address": "192.168.1.12",
         "comm_protocol": "ROKAE_SDK",
         "tools": ["gripper", "screwdriver"],
-        "home_joints_deg": [0.0, -45.0, 0.0, 90.0, 0.0, -45.0, 0.0],
+        "home_joints_deg": [0.0, -45.0, 0.0, 0.0, -45.0, 0.0],
     },
+    # 6-axis ROKAE per source equipment list; model is representative, source names no model
     RobotID.R3_ROKAE: {
         "brand": "ROKAE",
-        "model": "xMate ER3",
-        "payload_kg": 3.0,
-        "reach_mm": 590.0,
+        "model": "XB7",
+        "payload_kg": 7.0,
+        "reach_mm": 707.0,
         "repeatability_mm": 0.02,
-        "dof": 7,
+        "dof": 6,
         "ip_address": "192.168.1.13",
         "comm_protocol": "ROKAE_SDK",
         "tools": ["gripper", "screwdriver"],
-        "home_joints_deg": [0.0, -45.0, 0.0, 90.0, 0.0, -45.0, 0.0],
+        "home_joints_deg": [0.0, -45.0, 0.0, 0.0, -45.0, 0.0],
     },
 }
 
@@ -85,6 +87,7 @@ ROBOT_SPECS: dict[RobotID, dict] = {
 # Screw tightening profiles
 # ===================================================================
 
+# Torque targets are design assumptions; the source gives no torque values.
 SCREW_PROFILES: dict[ScrewProfile, dict] = {
     ScrewProfile.M25x4: {
         "target_torque_nm": 0.3,
@@ -113,6 +116,16 @@ SCREW_PROFILES: dict[ScrewProfile, dict] = {
         "thread_pitch_mm": 0.45,
     },
 }
+
+# Motor-mount screw per variant (source page I / page VI BOM:
+# #8 M2.5x4 x4, #11&#18 M2.5x6 x4).
+VARIANT_MOTOR_SCREW: dict[ActuatorVariant, ScrewProfile] = {
+    ActuatorVariant.ACT_8: ScrewProfile.M25x4,
+    ActuatorVariant.ACT_11: ScrewProfile.M25x6,
+    ActuatorVariant.ACT_18: ScrewProfile.M25x6,
+}
+
+BRAKE_BASE_SCREW: ScrewProfile = ScrewProfile.M25x6   # x2, #11&#18 only
 
 # ===================================================================
 # EtherCAT slave addresses (IgH EtherCAT Master)
@@ -155,10 +168,12 @@ ETHERCAT_SLAVES: list[EtherCATSlave] = [
 # Vision camera configuration
 # ===================================================================
 
+# Source: 1 handling vision + 2 tightening vision; mounting on the screwdriver
+# end-effector is a design assumption.
 VISION_CAMERAS: dict[str, dict] = {
     "cam_r1_eye_in_hand": {
         "type": "GigE",
-        "ip_address": "192.168.2.10",
+        "ip_address": "192.168.20.11",
         "model": "Basler_acA2440-35gm",
         "resolution": (2448, 2048),
         "pixel_size_um": 3.45,
@@ -168,17 +183,29 @@ VISION_CAMERAS: dict[str, dict] = {
         "calibration_mode": "eye_in_hand",
         "robot": "R1_FANUC",
     },
-    "cam_worktable_overhead": {
+    "cam_r2_tightening": {
         "type": "GigE",
-        "ip_address": "192.168.2.11",
+        "ip_address": "192.168.20.12",
         "model": "Basler_acA1920-40gm",
         "resolution": (1920, 1200),
         "pixel_size_um": 5.86,
         "focal_length_mm": 16.0,
         "exposure_us": 8000,
         "gain_db": 4.0,
-        "calibration_mode": "eye_to_hand",
-        "robot": None,
+        "calibration_mode": "eye_in_hand",
+        "robot": "R2_ROKAE",
+    },
+    "cam_r3_tightening": {
+        "type": "GigE",
+        "ip_address": "192.168.20.13",
+        "model": "Basler_acA1920-40gm",
+        "resolution": (1920, 1200),
+        "pixel_size_um": 5.86,
+        "focal_length_mm": 16.0,
+        "exposure_us": 8000,
+        "gain_db": 4.0,
+        "calibration_mode": "eye_in_hand",
+        "robot": "R3_ROKAE",
     },
 }
 
@@ -200,7 +227,8 @@ SAFETY_ZONES: list[SafetyZone] = [
 # ===================================================================
 
 TRAY_STACKER_COUNT: int = 3
-TRAYS_PER_STACKER: int = 15
+TRAYS_PER_STACKER: int = 5
+TRAY_COUNT_TOTAL: int = 15  # source equipment list: 15 trays across 3 box stackers (even split assumed)
 TRAY_ROWS: int = 4
 TRAY_COLS: int = 5
 TRAY_SLOT_PITCH_MM: float = 30.0
@@ -210,21 +238,22 @@ C_RACK_POSITIONS: int = 6                 # Slots on C-shape rack
 # Assembly recipes per variant
 # ===================================================================
 
+# Step numbers refer to the source sequence (page II, steps 1-17).
 VARIANT_STEP_COUNTS: dict[ActuatorVariant, dict] = {
     ActuatorVariant.ACT_8: {
-        "zone1_steps": 3,       # pick motor mount, pick motor, place both
-        "zone2_steps": 6,       # mount + motor + 4 screws
-        "zone3_steps": 0,       # skipped for #8
+        "zone1_steps": 3,       # steps 1-3: unload finished, load body, load motor
+        "zone2_steps": 7,       # steps 5-11: motor, cable dressing, body, clamp, screws x4, unclamp
+        "zone3_steps": 1,       # step 17 only: R2 returns product to Station 3 fixture
     },
     ActuatorVariant.ACT_11: {
-        "zone1_steps": 4,       # + pick brake magnet base
-        "zone2_steps": 6,
-        "zone3_steps": 3,       # brake base + 2 screws
+        "zone1_steps": 4,       # steps 1-4: + load brake magnet base
+        "zone2_steps": 7,       # steps 5-11
+        "zone3_steps": 6,       # steps 12-17: brake base, clamp, screws x2, unclamp, return
     },
     ActuatorVariant.ACT_18: {
-        "zone1_steps": 4,
-        "zone2_steps": 6,
-        "zone3_steps": 3,
+        "zone1_steps": 4,       # steps 1-4
+        "zone2_steps": 7,       # steps 5-11
+        "zone3_steps": 6,       # steps 12-17
     },
 }
 

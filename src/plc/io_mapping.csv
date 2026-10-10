@@ -56,21 +56,29 @@ Address,Signal_Name,Direction,Type,Module,Description
 %IX3.4,TT_Error,IN,BOOL,Delta_ASDA,Turntable servo fault
 %IW0,TT_ActPosition,IN,INT,Delta_ASDA,Turntable actual position (0.01deg)
 # ================================================================
-# Screw feeder — R2 station
+# Screw feeder 1 — R2 station (M2.5x4, Actuator #8; feeder-to-size assignment inferred)
 # ================================================================
-%QX4.0,SF_R2_FeedCmd,OUT,BOOL,EL2008-Slot3,R2 screw feeder feed command
-%IX4.0,SF_R2_BitPresent,IN,BOOL,EL1008-Slot3,R2 screw bit in-position
-%IX4.1,SF_R2_ScrewReady,IN,BOOL,EL1008-Slot3,R2 screw at pickup pos
-%IX4.2,SF_R2_FeederEmpty,IN,BOOL,EL1008-Slot3,R2 feeder low-level
-%IW1,SF_R2_Count,IN,INT,EL1008-Slot3,R2 feeder screw count
+%QX4.0,SF1_FeedCmd,OUT,BOOL,EL2008-Slot3,R2 screw feeder 1 (M2.5x4; #8) feed command
+%IX4.0,SF1_BitPresent,IN,BOOL,EL1008-Slot3,R2 screw feeder 1 (M2.5x4; #8) screw bit in-position
+%IX4.1,SF1_ScrewReady,IN,BOOL,EL1008-Slot3,R2 screw feeder 1 (M2.5x4; #8) screw at pickup pos
+%IX4.2,SF1_FeederEmpty,IN,BOOL,EL1008-Slot3,R2 screw feeder 1 (M2.5x4; #8) low-level
+%IW1,SF1_Count,IN,INT,EL1008-Slot3,R2 screw feeder 1 (M2.5x4; #8) screw count
 # ================================================================
-# Screw feeder — R3 station
+# Screw feeder 2 — R2 station (M2.5x6, Actuators #11 & #18; feeder-to-size assignment inferred)
 # ================================================================
-%QX4.4,SF_R3_FeedCmd,OUT,BOOL,EL2008-Slot3,R3 screw feeder feed command
-%IX4.4,SF_R3_BitPresent,IN,BOOL,EL1008-Slot3,R3 screw bit in-position
-%IX4.5,SF_R3_ScrewReady,IN,BOOL,EL1008-Slot3,R3 screw at pickup pos
-%IX4.6,SF_R3_FeederEmpty,IN,BOOL,EL1008-Slot3,R3 feeder low-level
-%IW2,SF_R3_Count,IN,INT,EL1008-Slot3,R3 feeder screw count
+%QX4.1,SF2_FeedCmd,OUT,BOOL,EL2008-Slot3,R2 screw feeder 2 (M2.5x6; #11&#18) feed command
+%IX4.4,SF2_BitPresent,IN,BOOL,EL1008-Slot3,R2 screw feeder 2 (M2.5x6; #11&#18) screw bit in-position
+%IX4.5,SF2_ScrewReady,IN,BOOL,EL1008-Slot3,R2 screw feeder 2 (M2.5x6; #11&#18) screw at pickup pos
+%IX4.6,SF2_FeederEmpty,IN,BOOL,EL1008-Slot3,R2 screw feeder 2 (M2.5x6; #11&#18) low-level
+%IW6,SF2_Count,IN,INT,EL1008-Slot3,R2 screw feeder 2 (M2.5x6; #11&#18) screw count
+# ================================================================
+# Screw feeder 3 — R3 station (M2.5x6, brake magnet base)
+# ================================================================
+%QX7.4,SF3_FeedCmd,OUT,BOOL,EL2008-Slot6,R3 screw feeder 3 (M2.5x6) feed command
+%IX7.4,SF3_BitPresent,IN,BOOL,EL1008-Slot6,R3 screw feeder 3 (M2.5x6) screw bit in-position
+%IX7.5,SF3_ScrewReady,IN,BOOL,EL1008-Slot6,R3 screw feeder 3 (M2.5x6) screw at pickup pos
+%IX7.6,SF3_FeederEmpty,IN,BOOL,EL1008-Slot6,R3 screw feeder 3 (M2.5x6) low-level
+%IW2,SF3_Count,IN,INT,EL1008-Slot6,R3 screw feeder 3 (M2.5x6) screw count
 # ================================================================
 # Safety I/O (via Beckhoff EL1904 / EL2904 TwinSAFE)
 # ================================================================
@@ -103,14 +111,18 @@ Address,Signal_Name,Direction,Type,Module,Description
 # ================================================================
 # Vision I/O (PLC <-> IPC handshake)
 # ================================================================
-%QX5.0,VIS_Trigger_R1,OUT,BOOL,EL2008-Slot4,Vision trigger for R1 camera
-%QX5.1,VIS_Trigger_WT,OUT,BOOL,EL2008-Slot4,Vision trigger worktable camera
-%IX5.0,VIS_Busy_R1,IN,BOOL,EL1008-Slot4,Vision R1 processing
-%IX5.1,VIS_Done_R1,IN,BOOL,EL1008-Slot4,Vision R1 result ready
-%IX5.2,VIS_OK_R1,IN,BOOL,EL1008-Slot4,Vision R1 result pass
-%IX5.3,VIS_Busy_WT,IN,BOOL,EL1008-Slot4,Vision worktable processing
-%IX5.4,VIS_Done_WT,IN,BOOL,EL1008-Slot4,Vision worktable result ready
-%IX5.5,VIS_OK_WT,IN,BOOL,EL1008-Slot4,Vision worktable result pass
+%QX5.0,VIS_Trigger_R1,OUT,BOOL,EL2008-Slot4,Vision trigger for R1 handling camera
+%QX5.1,VIS_Trigger_R2,OUT,BOOL,EL2008-Slot4,Vision trigger for R2 tightening camera
+%QX5.2,VIS_Trigger_R3,OUT,BOOL,EL2008-Slot4,Vision trigger for R3 tightening camera
+%IX5.0,VIS_Busy_R1,IN,BOOL,EL1008-Slot4,Vision R1 handling camera processing
+%IX5.1,VIS_Done_R1,IN,BOOL,EL1008-Slot4,Vision R1 handling camera result ready
+%IX5.2,VIS_OK_R1,IN,BOOL,EL1008-Slot4,Vision R1 handling camera result pass
+%IX5.3,VIS_Busy_R2,IN,BOOL,EL1008-Slot4,Vision R2 tightening camera processing
+%IX5.4,VIS_Done_R2,IN,BOOL,EL1008-Slot4,Vision R2 tightening camera result ready
+%IX5.5,VIS_OK_R2,IN,BOOL,EL1008-Slot4,Vision R2 tightening camera result pass
+%IX5.6,VIS_Busy_R3,IN,BOOL,EL1008-Slot4,Vision R3 tightening camera processing
+%IX5.7,VIS_Done_R3,IN,BOOL,EL1008-Slot4,Vision R3 tightening camera result ready
+%IX7.0,VIS_OK_R3,IN,BOOL,EL1008-Slot6,Vision R3 tightening camera result pass
 %IW3,VIS_Dx_R1,IN,INT,EL3102,Vision R1 X offset (0.01mm units)
 %IW4,VIS_Dy_R1,IN,INT,EL3102,Vision R1 Y offset (0.01mm units)
 %IW5,VIS_Drz_R1,IN,INT,EL3102,Vision R1 Rz offset (0.01deg units)

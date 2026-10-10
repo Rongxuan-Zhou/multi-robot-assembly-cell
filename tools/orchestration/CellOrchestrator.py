@@ -15,7 +15,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-from src.data_types.cell_types import (
+from tools.orchestration.cell_types import (
     ActuatorVariant,
     AssemblyStep,
     CellState,
@@ -27,7 +27,7 @@ from src.data_types.cell_types import (
     ZoneID,
     ZoneState,
 )
-from src.global_variables.system_config import (
+from tools.orchestration.system_config import (
     ETHERCAT_CYCLE_TIME_US,
     ETHERCAT_MASTER_INTERFACE,
     ETHERCAT_SLAVES,
@@ -40,10 +40,10 @@ from src.global_variables.system_config import (
     TURNTABLE_SETTLING_TIME_MS,
     VARIANT_STEP_COUNTS,
 )
-from src.robot_control.MaterialHandler import MaterialHandler
-from src.robot_control.RobotInterface import RobotInterface
-from src.robot_control.ScrewTighteningManager import ScrewTighteningManager
-from src.robot_control.VisionSystem import VisionSystem
+from tools.orchestration.MaterialHandler import MaterialHandler
+from tools.orchestration.RobotInterface import RobotInterface
+from tools.analysis.ScrewTighteningManager import ScrewTighteningManager
+from tools.vision.VisionSystem import VisionSystem
 
 logger = logging.getLogger(__name__)
 

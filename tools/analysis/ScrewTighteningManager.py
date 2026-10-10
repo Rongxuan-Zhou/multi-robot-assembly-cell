@@ -1,8 +1,9 @@
 """
 OP08#-1 Harmonic Reducer Motor Assembly Cell — Screw Tightening Manager
 
-Controls the multi-step screw-driving process for M2.5x4 (R2, motor
-mount) and M2.5x6 (R3, brake magnet base) fasteners.  Tracks torque /
+Controls the multi-step screw-driving process for M2.5x4 (#8) / M2.5x6
+(#11&#18) motor-mount screws on R2 and M2.5x6 brake-magnet-base screws
+on R3.  Tracks torque /
 angle curves, computes Cpk, and manages the screw feeder and bit wear.
 """
 
@@ -16,8 +17,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from src.data_types.cell_types import ScrewProfile, ScrewResult
-from src.global_variables.system_config import SCREW_PROFILES
+from tools.orchestration.cell_types import ScrewProfile, ScrewResult
+from tools.orchestration.system_config import SCREW_PROFILES
 
 logger = logging.getLogger(__name__)
 

@@ -238,46 +238,54 @@ CASE eCellState OF
 
             E_ZoneState.BUSY:
                 CASE nZone1Step OF
-                    0: (* Trigger vision for part localisation *)
+                    0: (* Unload finished product from Station 1 fixture to belt conveyor (source step 1) *)
+                        bR1_MoveCmd := TRUE;
+                        IF bR1_InPosition THEN
+                            bR1_MoveCmd := FALSE;
+                            bR1_GripperClosed := FALSE;
+                            nZone1Step := 1;
+                        END_IF
+
+                    1: (* Trigger vision for part localisation in the stacker tray *)
                         bVisionTrigger_R1 := TRUE;
                         IF bVisionDone_R1 AND bVisionOK_R1 THEN
                             bVisionTrigger_R1 := FALSE;
-                            nZone1Step := 1;
+                            nZone1Step := 2;
                         ELSIF bVisionDone_R1 AND NOT bVisionOK_R1 THEN
                             bVisionTrigger_R1 := FALSE;
                             eZone1State := E_ZoneState.ERROR;
                         END_IF
 
-                    1: (* Pick motor mount *)
+                    2: (* Pick motor mounting body from stacker tray (source step 2) *)
                         bR1_MoveCmd := TRUE;
                         IF bR1_InPosition THEN
                             bR1_MoveCmd := FALSE;
                             bR1_GripperClosed := TRUE;
-                            nZone1Step := 2;
+                            nZone1Step := 3;
                         END_IF
 
-                    2: (* Place motor mount on turntable fixture *)
+                    3: (* Place motor mounting body on Station 1 turntable fixture (source step 2) *)
                         bR1_MoveCmd := TRUE;
                         IF bR1_InPosition THEN
                             bR1_MoveCmd := FALSE;
                             bR1_GripperClosed := FALSE;
-                            nZone1Step := 3;
+                            nZone1Step := 4;
                         END_IF
 
-                    3: (* Pick motor and place *)
+                    4: (* Pick motor from tray and place on turntable transfer fixture (source step 3) *)
                         bR1_SuctionON := TRUE;
                         bR1_MoveCmd := TRUE;
                         IF bR1_InPosition THEN
                             bR1_MoveCmd := FALSE;
                             bR1_SuctionON := FALSE;
                             IF bVariantRequiresBrake THEN
-                                nZone1Step := 4;
+                                nZone1Step := 5;
                             ELSE
                                 eZone1State := E_ZoneState.DONE;
                             END_IF
                         END_IF
 
-                    4: (* Pick brake magnet base — only #11 & #18 *)
+                    5: (* Pick brake magnet base to transfer fixture — only #11 & #18 (source step 4) *)
                         bR1_MoveCmd := TRUE;
                         IF bR1_InPosition THEN
                             bR1_MoveCmd := FALSE;
@@ -292,7 +300,7 @@ CASE eCellState OF
                 eCellState := E_CellState.ERROR;
         END_CASE
 
-        (* --- Zone 2: R2 Main Assembly (motor mount + motor + 4 screws) --- *)
+        (* --- Zone 2: R2 Main Assembly (motor + motor mounting body + 4 screws; screw size per variant) --- *)
         CASE eZone2State OF
             E_ZoneState.IDLE:
                 nZone2Step := 0;
@@ -300,15 +308,15 @@ CASE eCellState OF
 
             E_ZoneState.BUSY:
                 CASE nZone2Step OF
-                    0: (* Locate motor mount on fixture *)
+                    0: (* Pick motor from turntable transfer fixture (source step 5) *)
+                        bR2_GripperClosed := TRUE;
                         bR2_MoveCmd := TRUE;
                         IF bR2_InPosition THEN
                             bR2_MoveCmd := FALSE;
                             nZone2Step := 1;
                         END_IF
 
-                    1: (* Pick up motor mount and seat on assembly jig *)
-                        bR2_GripperClosed := TRUE;
+                    1: (* Place motor on workbench fixture; cable-dressing fixture arranges cables (source steps 5-6) *)
                         bR2_MoveCmd := TRUE;
                         IF bR2_InPosition THEN
                             bR2_MoveCmd := FALSE;
@@ -316,7 +324,8 @@ CASE eCellState OF
                             nZone2Step := 2;
                         END_IF
 
-                    2: (* Pick motor and insert into mount *)
+                    2: (* Pick motor mounting body and lower onto motor; cable-dressing fixture retracts;
+                          clamping fixture clamps motor / body (source steps 7-8, no dedicated PLC output) *)
                         bR2_GripperClosed := TRUE;
                         bR2_MoveCmd := TRUE;
                         IF bR2_InPosition THEN
@@ -325,7 +334,7 @@ CASE eCellState OF
                             nZone2Step := 3;
                         END_IF
 
-                    3: (* Screw 1 of 4 — M2.5x4 *)
+                    3: (* Screw 1 of 4 — M2.5x4 (#8) / M2.5x6 (#11&#18) *)
                         nScrewIndex_R2 := 1;
                         bScrewStart_R2 := TRUE;
                         IF bScrewDone_R2 THEN
@@ -337,7 +346,7 @@ CASE eCellState OF
                             END_IF
                         END_IF
 
-                    4: (* Screw 2 of 4 *)
+                    4: (* Screw 2 of 4 — M2.5x4 (#8) / M2.5x6 (#11&#18) *)
                         nScrewIndex_R2 := 2;
                         bScrewStart_R2 := TRUE;
                         IF bScrewDone_R2 THEN
@@ -349,7 +358,7 @@ CASE eCellState OF
                             END_IF
                         END_IF
 
-                    5: (* Screw 3 of 4 *)
+                    5: (* Screw 3 of 4 — M2.5x4 (#8) / M2.5x6 (#11&#18) *)
                         nScrewIndex_R2 := 3;
                         bScrewStart_R2 := TRUE;
                         IF bScrewDone_R2 THEN
@@ -361,7 +370,7 @@ CASE eCellState OF
                             END_IF
                         END_IF
 
-                    6: (* Screw 4 of 4 *)
+                    6: (* Screw 4 of 4 — M2.5x4 (#8) / M2.5x6 (#11&#18); clamping fixture releases on completion (source step 11) *)
                         nScrewIndex_R2 := 4;
                         bScrewStart_R2 := TRUE;
                         IF bScrewDone_R2 THEN
@@ -381,7 +390,7 @@ CASE eCellState OF
                 eCellState := E_CellState.ERROR;
         END_CASE
 
-        (* --- Zone 3: R3 Brake Magnet Base (2 screws M2.5x6) --- *)
+        (* --- Zone 3: R3 Brake Magnet Base (brake magnet base, 2 screws M2.5x6, #11&#18 only) --- *)
         CASE eZone3State OF
             E_ZoneState.IDLE:
                 IF bVariantRequiresBrake THEN
@@ -393,7 +402,7 @@ CASE eCellState OF
 
             E_ZoneState.BUSY:
                 CASE nZone3Step OF
-                    0: (* Pick brake magnet base from fixture *)
+                    0: (* Pick brake magnet base from transfer fixture to workbench, aligned to motor shaft; clamp (source steps 12-13) *)
                         bR3_GripperClosed := TRUE;
                         bR3_MoveCmd := TRUE;
                         IF bR3_InPosition THEN
@@ -413,7 +422,7 @@ CASE eCellState OF
                             END_IF
                         END_IF
 
-                    2: (* Screw 2 of 2 *)
+                    2: (* Screw 2 of 2 — M2.5x6; clamping fixture releases on completion (source steps 15-16) *)
                         nScrewIndex_R3 := 2;
                         bScrewStart_R3 := TRUE;
                         IF bScrewDone_R3 THEN
@@ -427,7 +436,7 @@ CASE eCellState OF
                 END_CASE
 
             E_ZoneState.DONE:
-                ;
+                ; (* Source step 17: R2 transfers the product from the workbench to the Station 3 fixture after Zone 3 completes — handled by the R2 return move before the turntable handshake *)
 
             E_ZoneState.ERROR:
                 eCellState := E_CellState.ERROR;

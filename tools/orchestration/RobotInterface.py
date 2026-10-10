@@ -14,7 +14,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from src.data_types.cell_types import (
+from tools.orchestration.cell_types import (
     CalibrationMode,
     JointAngles,
     MotionType,

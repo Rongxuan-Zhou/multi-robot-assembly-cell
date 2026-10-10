@@ -1,23 +1,24 @@
 # ================================================================
-# OP08#-1 — Robot R3 Configuration (ROKAE xMate ER3)
+# OP08#-1 — Robot R3 Configuration (ROKAE XB7)
 # Role: Brake magnet base assembly — 2 screws (M2.5x6)
 #       Active only for Actuator #11 and #18
+# 6-axis ROKAE per source; XB7 is a representative model
 # ================================================================
 
 robot:
   id: R3_ROKAE
   brand: ROKAE
-  model: xMate ER3
+  model: XB7
   serial_number: RK-2024-R3-0098
   role: brake_magnet_base_assembly
 
 specifications:
-  dof: 7
-  payload_kg: 3.0
-  reach_mm: 590.0
+  dof: 6
+  payload_kg: 7.0
+  reach_mm: 707.0
   repeatability_mm: 0.02
-  max_speed_deg_s: [180, 180, 180, 180, 360, 360, 360]
-  weight_kg: 17.0
+  max_speed_deg_s: [180, 180, 180, 360, 360, 360]
+  weight_kg: 50.0                  # approx. XB7 (RoboDK listing); not from the deck
   ip_rating: IP54
   force_torque_sensor: integrated
 
@@ -42,12 +43,12 @@ tools:
     type: electric_spindle
     max_torque_nm: 2.0
     max_speed_rpm: 800
-    bit_type: PH0
+    bit_type: HEX1.5    # hex socket countersunk M2.5 — 1.5 mm hex key
     tcp_offset: [0.0, 0.0, 165.0, 0.0, 0.0, 0.0]
 
 screw_profile: M2.5x6
 screw_count_per_cycle: 2
-screw_feeder_id: feeder_r3
+screw_feeder_id: feeder_3
 
 active_variants:
   - ACT_11
@@ -55,7 +56,7 @@ active_variants:
 # Note: R3 is idle during ACT_8 production
 
 home_position:
-  joints_deg: [0.0, -45.0, 0.0, 90.0, 0.0, -45.0, 0.0]
+  joints_deg: [0.0, -45.0, 0.0, 0.0, -45.0, 0.0]
 
 speed_profiles:
   fast:

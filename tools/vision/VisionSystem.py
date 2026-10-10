@@ -3,8 +3,9 @@ OP08#-1 Harmonic Reducer Motor Assembly Cell — Vision System
 
 2-D machine-vision module for part localisation, screw-hole detection,
 and tray-slot occupancy.  Supports GigE Vision and USB3 cameras with
-hand-eye calibration for both eye-in-hand (R1) and eye-to-hand
-(worktable overhead) setups.
+eye-in-hand hand-eye calibration: the R1 handling camera and the R2 / R3
+tightening cameras (source lists 1 handling vision + 2 tightening vision;
+no fixed overhead camera).  Eye-to-hand is supported but unused on OP08#-1.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from typing import Optional
 
 import numpy as np
 
-from src.data_types.cell_types import (
+from tools.orchestration.cell_types import (
     CalibrationMode,
     Pose,
     TraySlot,

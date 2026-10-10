@@ -14,8 +14,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from src.data_types.cell_types import TraySlot, TrayType
-from src.global_variables.system_config import (
+from tools.orchestration.cell_types import TraySlot, TrayType
+from tools.orchestration.system_config import (
     C_RACK_POSITIONS,
     TRAY_COLS,
     TRAY_ROWS,
